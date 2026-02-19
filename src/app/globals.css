@@ -1,0 +1,112 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --fx-bg: #0a0a0f;
+  --fx-surface: #111118;
+  --fx-border: #1e1e2e;
+  --fx-accent: #6c47ff;
+  --fx-red: #ff3b5c;
+  --fx-green: #00e5a0;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: var(--fx-bg);
+  color: #e8e8f0;
+  font-family: var(--font-syne), system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #2a2a3e; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #3a3a5e; }
+
+/* Grid background pattern */
+.grid-bg {
+  background-image:
+    linear-gradient(rgba(108, 71, 255, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(108, 71, 255, 0.04) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+/* Glow orbs */
+.orb {
+  position: fixed;
+  border-radius: 50%;
+  filter: blur(120px);
+  pointer-events: none;
+  z-index: 0;
+}
+.orb-purple { background: rgba(108, 71, 255, 0.12); width: 600px; height: 600px; top: -200px; right: -100px; }
+.orb-blue   { background: rgba(0, 200, 255, 0.06); width: 400px; height: 400px; bottom: 0; left: 200px; }
+
+/* Stat card top border effect */
+.stat-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 12px;
+  padding: 1px;
+  background: linear-gradient(135deg, rgba(108, 71, 255, 0.4), transparent 60%);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+/* Kill switch glow */
+.ks-active { box-shadow: 0 0 40px rgba(255, 59, 92, 0.4), 0 0 80px rgba(255, 59, 92, 0.15); }
+.ks-safe   { box-shadow: 0 0 40px rgba(0, 229, 160, 0.25), 0 0 80px rgba(0, 229, 160, 0.08); }
+
+/* Animated gradient text */
+.gradient-text {
+  background: linear-gradient(135deg, #a78bfa, #6c47ff, #00e5a0);
+  background-size: 200% 200%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: shimmer 4s ease infinite;
+}
+@keyframes shimmer {
+  0%, 100% { background-position: 0% 50%; }
+  50%       { background-position: 100% 50%; }
+}
+
+/* Confidence bar */
+.confidence-fill {
+  height: 4px;
+  border-radius: 9999px;
+  transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Pulse dot */
+.pulse-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  position: relative;
+}
+.pulse-dot::after {
+  content: "";
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  border: 2px solid currentColor;
+  animation: ping 1.5s ease infinite;
+  opacity: 0;
+}
+@keyframes ping {
+  0% { transform: scale(0.8); opacity: 0.8; }
+  100% { transform: scale(1.8); opacity: 0; }
+}

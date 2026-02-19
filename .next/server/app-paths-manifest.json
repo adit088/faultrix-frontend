@@ -1,0 +1,5 @@
+{
+  "/dashboard/page": "app/dashboard/page.js",
+  "/webhooks/page": "app/webhooks/page.js",
+  "/insights/page": "app/insights/page.js"
+}
