@@ -4,7 +4,7 @@ import type {
   ChaosEventResponse, ChaosAnalyticsResponse,
   ChaosScheduleResponse, ChaosScheduleRequest,
   WebhookConfig, KillSwitchStatus, TrafficStats, Page,
-  FailureInsight,
+  FailureInsight, ProxyRequest, ProxyResponse,
 } from "@/types"
 
 // Calls our own Next.js API proxy — API key never reaches the browser
@@ -74,6 +74,15 @@ export const insightsApi = {
   // Proxy:   GET /api/proxy/insights?target=xxx
   forTarget: (target: string) =>
     http.get<FailureInsight[]>("/insights", { params: { target } }).then(r => r.data),
+}
+
+// ─── Proxy ────────────────────────────────────────────────────────────────────
+export const proxyApi = {
+  // POST /api/proxy/proxy/forward → backend /api/v1/proxy/forward
+  forward: (body: ProxyRequest) =>
+    http.post<ProxyResponse>("/proxy/forward", body).then(r => r.data),
+  health: () =>
+    http.get("/proxy/health").then(r => r.data),
 }
 
 // ─── System ───────────────────────────────────────────────────────────────────

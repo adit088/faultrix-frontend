@@ -179,3 +179,27 @@ export interface Page<T> {
   number: number
   size: number
 }
+
+// ─── Proxy ────────────────────────────────────────────────────────────────────
+export interface ProxyRequest {
+  method: string
+  url: string
+  headers?: Record<string, string>
+  body?: string
+}
+
+export type ProxyChaosType =
+  | "LATENCY" | "ERROR_4XX" | "ERROR_5XX"
+  | "TIMEOUT" | "EXCEPTION" | "NONE"
+
+export interface ProxyResponse {
+  status: number
+  body: string | null
+  headers: Record<string, string>
+  chaosInjected: boolean
+  chaosType: ProxyChaosType | null
+  injectedDelayMs: number
+  target: string
+  requestId: string
+  processedAt: string
+}
