@@ -13,33 +13,31 @@ const typeColors: Record<string, string> = {
 
 function EventRow({ ev }: { ev: ChaosEventResponse }) {
   return (
-    <div className="flex items-center gap-3 py-2.5 border-b border-[#1e1e2e]/50 animate-fade-in text-sm">
+    <div className="flex items-center gap-2 lg:gap-3 py-2.5 border-b border-[#1e1e2e]/50 animate-fade-in text-sm min-w-[420px]">
       <div className={cn(
         "w-2 h-2 rounded-full flex-shrink-0",
         ev.injected ? "bg-[#ff3b5c]" : "bg-[#4a4a6a]"
       )} />
-      <span className="font-mono text-[#8888aa] text-xs w-24 truncate">{ev.requestId?.slice(-8) ?? "–"}</span>
-      <span className="text-[#e8e8f0] flex-1 truncate">{ev.target}</span>
+      <span className="font-mono text-[#8888aa] text-xs w-20 truncate">{ev.requestId?.slice(-8) ?? "–"}</span>
+      <span className="text-[#e8e8f0] flex-1 truncate text-xs lg:text-sm">{ev.target}</span>
       {ev.chaosType && (
-        <span className={cn("text-[10px] font-mono px-1.5 py-0.5 rounded border", typeColors[ev.chaosType] ?? "text-[#8888aa]")}>
+        <span className={cn("text-[10px] font-mono px-1.5 py-0.5 rounded border flex-shrink-0", typeColors[ev.chaosType] ?? "text-[#8888aa]")}>
           {ev.chaosType}
         </span>
       )}
-      <span className={cn("text-xs font-mono", ev.injected ? "text-[#ff3b5c]" : "text-[#00e5a0]")}>
+      <span className={cn("text-xs font-mono flex-shrink-0", ev.injected ? "text-[#ff3b5c]" : "text-[#00e5a0]")}>
         {ev.injected ? ev.httpStatus ?? "ERR" : "SKIP"}
       </span>
-      <span className="text-[10px] text-[#4a4a6a] w-16 text-right">{timeAgo(ev.occurredAt)}</span>
+      <span className="text-[10px] text-[#4a4a6a] w-14 text-right flex-shrink-0">{timeAgo(ev.occurredAt)}</span>
     </div>
   )
 }
 
 export default function EventFeed({ limit = 8 }: { limit?: number }) {
-  // Start empty on server to prevent hydration mismatch from Math.random()
   const [events, setEvents] = useState<ChaosEventResponse[]>([])
 
   useEffect(() => {
     setEvents(mockEvents.slice(0, limit))
-
     const interval = setInterval(() => {
       const newEv: ChaosEventResponse = {
         id: Date.now(),
@@ -54,19 +52,18 @@ export default function EventFeed({ limit = 8 }: { limit?: number }) {
       }
       setEvents(prev => [newEv, ...prev].slice(0, limit))
     }, 2500)
-
     return () => clearInterval(interval)
   }, [limit])
 
   return (
-    <div className="overflow-hidden">
-      <div className="flex items-center gap-3 pb-2 text-[10px] font-mono uppercase text-[#4a4a6a] border-b border-[#1e1e2e]">
+    <div className="overflow-x-auto">
+      <div className="flex items-center gap-2 lg:gap-3 pb-2 text-[10px] font-mono uppercase text-[#4a4a6a] border-b border-[#1e1e2e] min-w-[420px]">
         <div className="w-2" />
-        <span className="w-24">Request ID</span>
+        <span className="w-20">Request ID</span>
         <span className="flex-1">Target</span>
         <span className="w-20">Type</span>
         <span className="w-8">Status</span>
-        <span className="w-16 text-right">Time</span>
+        <span className="w-14 text-right">Time</span>
       </div>
       {events.length === 0 ? (
         <div className="py-8 text-center text-xs text-[#4a4a6a] font-mono animate-pulse">

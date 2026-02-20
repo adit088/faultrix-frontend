@@ -14,20 +14,35 @@ const nav = [
   { href: "/pricing",      label: "Upgrade",      icon: "✦", accent: true },
 ]
 
-export default function Sidebar() {
+interface SidebarProps {
+  open: boolean
+  onClose: () => void
+}
+
+export default function Sidebar({ open, onClose }: SidebarProps) {
   const path = usePathname()
   return (
-    <aside className="fixed left-0 top-0 h-screen w-56 flex flex-col z-50 border-r border-[#1e1e2e] bg-[#0d0d15]/80 backdrop-blur-xl">
-      {/* Logo */}
-      <div className="px-5 py-6 border-b border-[#1e1e2e]">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-[#6c47ff] flex items-center justify-center text-white font-bold text-sm">F</div>
-          <span className="font-bold text-lg tracking-tight">Faultrix</span>
+    <aside className={cn(
+      "fixed left-0 top-0 h-screen w-56 flex flex-col z-50 border-r border-[#1e1e2e] bg-[#0d0d15]/95 backdrop-blur-xl transition-transform duration-300",
+      "lg:translate-x-0",
+      open ? "translate-x-0" : "-translate-x-full"
+    )}>
+      <div className="px-5 py-6 border-b border-[#1e1e2e] flex items-center justify-between">
+        <div>
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-lg bg-[#6c47ff] flex items-center justify-center text-white font-bold text-sm">F</div>
+            <span className="font-bold text-lg tracking-tight">Faultrix</span>
+          </div>
+          <p className="text-[10px] text-[#4a4a6a] mt-1 font-mono uppercase tracking-widest">Chaos Platform</p>
         </div>
-        <p className="text-[10px] text-[#4a4a6a] mt-1 font-mono uppercase tracking-widest">Chaos Platform</p>
+        <button
+          onClick={onClose}
+          className="lg:hidden text-[#4a4a6a] hover:text-[#e8e8f0] text-xl leading-none p-1"
+        >
+          ✕
+        </button>
       </div>
 
-      {/* Nav */}
       <nav className="flex-1 p-3 space-y-0.5 overflow-y-auto">
         {nav.map(({ href, label, icon, accent }) => {
           const active = path.startsWith(href)
@@ -35,6 +50,7 @@ export default function Sidebar() {
             <Link
               key={href}
               href={href}
+              onClick={onClose}
               className={cn(
                 "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all duration-200 group",
                 active
@@ -54,7 +70,6 @@ export default function Sidebar() {
         })}
       </nav>
 
-      {/* Footer */}
       <div className="p-4 border-t border-[#1e1e2e]">
         <div className="bg-[#111118] rounded-lg p-3">
           <p className="text-[10px] font-mono text-[#4a4a6a] uppercase tracking-wider">API Status</p>
