@@ -6,12 +6,11 @@ import type {
   WebhookConfig, KillSwitchStatus, TrafficStats, Page,
 } from "@/types"
 
-const BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080/api/v1"
+const BASE = process.env.NEXT_PUBLIC_API_URL ?? "https://faultrix-backend-production.up.railway.app/api/v1"
 
-// All requests include the org header — set your real org id here or read from auth
 const http = axios.create({
   baseURL: BASE,
-  headers: { "X-API-Key": "ck_test_default_1234567890abcdef" },
+  headers: { "X-API-Key": process.env.NEXT_PUBLIC_API_KEY ?? "ck_test_default_1234567890abcdef" },
 })
 
 // ─── Rules ────────────────────────────────────────────────────────────────────
@@ -24,6 +23,7 @@ export const rulesApi = {
   enabled: () => http.get<ChaosRuleResponse[]>("/chaos/rules/enabled").then(r => r.data),
   create: (body: ChaosRuleRequest) => http.post<ChaosRuleResponse>("/chaos/rules", body).then(r => r.data),
   update: (id: number, body: ChaosRuleRequest) => http.put<ChaosRuleResponse>(`/chaos/rules/${id}`, body).then(r => r.data),
+  toggle: (id: number, enabled: boolean) => http.patch<ChaosRuleResponse>(`/chaos/rules/${id}`, { enabled }).then(r => r.data),
   delete: (id: number) => http.delete(`/chaos/rules/${id}`),
 }
 

@@ -1,18 +1,43 @@
 "use client"
-import { useState } from "react"
-import { mockTraffic } from "@/lib/mock"
+import { useState, useEffect } from "react"
+import { experimentsApi } from "@/lib/api"
 import { fmt, pct } from "@/lib/utils"
+import type { TrafficStats } from "@/types"
+
+const empty: TrafficStats = { total: 0, injected: 0, skipped: 0, injectionRate: 0 }
 
 export default function ExperimentsPage() {
-  const [traffic, setTraffic] = useState(mockTraffic)
+  const [traffic, setTraffic] = useState<TrafficStats>(empty)
   const [resetting, setResetting] = useState(false)
+  const [loading, setLoading] = useState(true)
+
+  async function loadTraffic() {
+    try {
+      const data = await experimentsApi.traffic()
+      setTraffic(data)
+    } catch {
+      // backend may not have traffic endpoint yet — leave empty
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    loadTraffic()
+    const interval = setInterval(loadTraffic, 10000)
+    return () => clearInterval(interval)
+  }, [])
 
   const reset = async () => {
     setResetting(true)
-    setTimeout(() => {
-      setTraffic({ total: 0, injected: 0, skipped: 0, injectionRate: 0 })
+    try {
+      await experimentsApi.reset()
+      setTraffic(empty)
+    } catch {
+      alert("Reset failed. Check backend connection.")
+    } finally {
       setResetting(false)
-    }, 800)
+    }
   }
 
   return (
@@ -29,10 +54,10 @@ export default function ExperimentsPage() {
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4">
         {[
-          { label: "Total Requests", value: fmt(traffic.total), color: "#6c47ff" },
-          { label: "Injected", value: fmt(traffic.injected), color: "#ff3b5c" },
-          { label: "Skipped", value: fmt(traffic.skipped), color: "#8888aa" },
-          { label: "Injection Rate", value: pct(traffic.injectionRate), color: "#00e5a0" },
+          { label: "Total Requests", value: loading ? "—" : fmt(traffic.total), color: "#6c47ff" },
+          { label: "Injected", value: loading ? "—" : fmt(traffic.injected), color: "#ff3b5c" },
+          { label: "Skipped", value: loading ? "—" : fmt(traffic.skipped), color: "#8888aa" },
+          { label: "Injection Rate", value: loading ? "—" : pct(traffic.injectionRate), color: "#00e5a0" },
         ].map(s => (
           <div key={s.label} className="bg-[#111118] rounded-xl border border-[#1e1e2e] p-4 lg:p-5">
             <p className="text-[10px] font-mono uppercase text-[#4a4a6a]">{s.label}</p>
@@ -51,6 +76,15 @@ export default function ExperimentsPage() {
           <span className="text-[#ff3b5c]">Injected: {pct(traffic.injectionRate)}</span>
           <span>Skipped: {pct(1 - traffic.injectionRate)}</span>
         </div>
+      </div>
+
+      <div className="bg-[#111118] rounded-xl border border-[#1e1e2e] p-4 lg:p-5">
+        <h3 className="text-sm font-semibold text-[#e8e8f0] mb-2">About Experiments</h3>
+        <p className="text-xs text-[#8888aa] leading-relaxed">
+          Experiments track how much chaos is being injected across your system in real time.
+          Each request routed through a chaos rule is counted here. Use Reset to clear counters
+          and start a fresh experiment run.
+        </p>
       </div>
     </div>
   )

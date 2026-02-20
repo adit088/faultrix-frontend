@@ -1,17 +1,72 @@
 "use client"
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { webhooksApi } from "@/lib/api"
 import type { WebhookConfig } from "@/types"
 import { cn } from "@/lib/utils"
 
-const mockWebhooks: WebhookConfig[] = [
-  { id: 1, url: "https://hooks.slack.com/services/T0xxx/Byyy/zzz", enabled: true, events: ["chaos.injected", "chaos.skipped"], createdAt: new Date().toISOString() },
-  { id: 2, url: "https://api.pagerduty.com/v2/enqueue", enabled: true, events: ["chaos.injected"], createdAt: new Date().toISOString() },
-  { id: 3, url: "https://example.com/chaos-webhook", enabled: false, events: ["chaos.injected", "chaos.skipped", "rule.toggled"], createdAt: new Date().toISOString() },
-]
+const ALL_EVENTS = ["chaos.injected", "chaos.skipped", "rule.toggled", "rule.created"]
 
 export default function WebhooksPage() {
-  const [webhooks, setWebhooks] = useState<WebhookConfig[]>(mockWebhooks)
-  const toggleHook = (id: number) => setWebhooks(w => w.map(h => h.id === id ? { ...h, enabled: !h.enabled } : h))
+  const [webhooks, setWebhooks] = useState<WebhookConfig[]>([])
+  const [loading, setLoading] = useState(true)
+  const [showForm, setShowForm] = useState(false)
+  const [url, setUrl] = useState("")
+  const [secret, setSecret] = useState("")
+  const [selectedEvents, setSelectedEvents] = useState<string[]>(["chaos.injected"])
+  const [saving, setSaving] = useState(false)
+
+  async function load() {
+    try {
+      const data = await webhooksApi.list()
+      setWebhooks(data)
+    } catch {
+      console.error("Failed to load webhooks")
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => { load() }, [])
+
+  const toggleHook = async (hook: WebhookConfig) => {
+    try {
+      setWebhooks(w => w.map(h => h.id === hook.id ? { ...h, enabled: !h.enabled } : h))
+      await webhooksApi.update(hook.id, { enabled: !hook.enabled })
+    } catch {
+      setWebhooks(w => w.map(h => h.id === hook.id ? { ...h, enabled: hook.enabled } : h))
+    }
+  }
+
+  const deleteHook = async (id: number) => {
+    if (!confirm("Delete this webhook?")) return
+    try {
+      setWebhooks(w => w.filter(h => h.id !== id))
+      await webhooksApi.delete(id)
+    } catch {
+      load()
+    }
+  }
+
+  const createHook = async () => {
+    if (!url.trim()) return
+    setSaving(true)
+    try {
+      const created = await webhooksApi.create({ url, secret: secret || undefined, enabled: true, events: selectedEvents })
+      setWebhooks(w => [...w, created])
+      setShowForm(false)
+      setUrl(""); setSecret(""); setSelectedEvents(["chaos.injected"])
+    } catch {
+      alert("Failed to create webhook.")
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  if (loading) return (
+    <div className="flex items-center justify-center h-64">
+      <div className="w-8 h-8 rounded-full border-2 border-[#6c47ff] border-t-transparent animate-spin" />
+    </div>
+  )
 
   return (
     <div className="space-y-4 lg:space-y-6 animate-slide-up">
@@ -20,13 +75,54 @@ export default function WebhooksPage() {
           <h2 className="text-xl font-bold text-[#e8e8f0]">Webhooks</h2>
           <p className="text-xs text-[#4a4a6a]">HMAC-signed event delivery endpoints</p>
         </div>
-        <button className="px-3 py-2 lg:px-4 rounded-lg bg-[#6c47ff] text-white text-sm font-medium hover:bg-[#7c57ff]">
+        <button onClick={() => setShowForm(true)} className="px-3 py-2 lg:px-4 rounded-lg bg-[#6c47ff] text-white text-sm font-medium hover:bg-[#7c57ff]">
           + Add Webhook
         </button>
       </div>
+
+      {showForm && (
+        <div className="bg-[#111118] rounded-xl border border-[#6c47ff]/40 p-5 space-y-4">
+          <h3 className="text-sm font-semibold text-[#e8e8f0]">New Webhook</h3>
+          <div className="space-y-3">
+            <div>
+              <label className="text-[10px] font-mono uppercase text-[#4a4a6a] block mb-1">Endpoint URL *</label>
+              <input value={url} onChange={e => setUrl(e.target.value)} placeholder="https://hooks.slack.com/..." className="w-full bg-[#0a0a0f] border border-[#1e1e2e] rounded-lg px-3 py-2 text-sm text-[#e8e8f0] focus:border-[#6c47ff] outline-none" />
+            </div>
+            <div>
+              <label className="text-[10px] font-mono uppercase text-[#4a4a6a] block mb-1">Secret (optional)</label>
+              <input value={secret} onChange={e => setSecret(e.target.value)} placeholder="HMAC signing secret" className="w-full bg-[#0a0a0f] border border-[#1e1e2e] rounded-lg px-3 py-2 text-sm text-[#e8e8f0] focus:border-[#6c47ff] outline-none" />
+            </div>
+            <div>
+              <label className="text-[10px] font-mono uppercase text-[#4a4a6a] block mb-2">Events</label>
+              <div className="flex flex-wrap gap-2">
+                {ALL_EVENTS.map(ev => (
+                  <button key={ev} onClick={() => setSelectedEvents(s => s.includes(ev) ? s.filter(x => x !== ev) : [...s, ev])}
+                    className={cn("text-[10px] font-mono px-2 py-1 rounded border transition-all", selectedEvents.includes(ev) ? "bg-[#6c47ff]/20 text-[#a78bfa] border-[#6c47ff]/40" : "text-[#4a4a6a] border-[#1e1e2e] hover:border-[#6c47ff]/30")}>
+                    {ev}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+          <div className="flex gap-3">
+            <button onClick={createHook} disabled={saving || !url.trim()} className="px-4 py-2 rounded-lg bg-[#6c47ff] text-white text-sm font-medium hover:bg-[#7c57ff] disabled:opacity-50">
+              {saving ? "Creating..." : "Create Webhook"}
+            </button>
+            <button onClick={() => setShowForm(false)} className="px-4 py-2 rounded-lg border border-[#1e1e2e] text-[#8888aa] text-sm hover:text-[#e8e8f0]">Cancel</button>
+          </div>
+        </div>
+      )}
+
+      {webhooks.length === 0 && !showForm && (
+        <div className="bg-[#111118] rounded-xl border border-[#1e1e2e] p-12 text-center">
+          <p className="text-[#4a4a6a] text-sm font-mono">No webhooks configured yet.</p>
+          <p className="text-[#4a4a6a] text-xs mt-1">Add a webhook to receive chaos events in Slack, PagerDuty, or any HTTP endpoint.</p>
+        </div>
+      )}
+
       <div className="space-y-3">
         {webhooks.map(hook => (
-          <div key={hook.id} className={cn("bg-[#111118] rounded-xl border p-4 lg:p-5 transition-all", hook.enabled ? "border-[#1e1e2e]" : "border-[#1e1e2e] opacity-60")}>
+          <div key={hook.id} className={cn("bg-[#111118] rounded-xl border p-4 lg:p-5 transition-all group", hook.enabled ? "border-[#1e1e2e]" : "border-[#1e1e2e] opacity-60")}>
             <div className="flex items-start justify-between gap-3">
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-2">
@@ -40,8 +136,9 @@ export default function WebhooksPage() {
                 </div>
               </div>
               <div className="flex items-center gap-2 flex-shrink-0">
+                <button onClick={() => deleteHook(hook.id)} className="opacity-0 group-hover:opacity-100 text-[#ff3b5c]/60 hover:text-[#ff3b5c] text-xs transition-all">✕</button>
                 <span className="text-[10px] font-mono text-[#4a4a6a] hidden sm:block">HMAC-SHA256</span>
-                <button onClick={() => toggleHook(hook.id)} className={cn("w-9 h-5 rounded-full transition-all relative", hook.enabled ? "bg-[#00e5a0]/80" : "bg-[#2a2a3e]")}>
+                <button onClick={() => toggleHook(hook)} className={cn("w-9 h-5 rounded-full transition-all relative", hook.enabled ? "bg-[#00e5a0]/80" : "bg-[#2a2a3e]")}>
                   <div className={cn("absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform", hook.enabled ? "translate-x-4" : "translate-x-0.5")} />
                 </button>
               </div>
