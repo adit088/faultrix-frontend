@@ -31,6 +31,12 @@ async function proxy(req: NextRequest, pathSegments: string[], method: string) {
   const search = req.nextUrl.search ?? ""
   const url = `${BACKEND}/${path}${search}`
 
+  // DEBUG — remove after fix confirmed
+  console.log("[proxy] API_KEY length:", API_KEY.length)
+  console.log("[proxy] API_KEY value:", API_KEY)
+  console.log("[proxy] BACKEND:", BACKEND)
+  console.log("[proxy] forwarding to:", url)
+
   const headers: HeadersInit = {
     "Content-Type": "application/json",
     "X-API-Key": API_KEY,
