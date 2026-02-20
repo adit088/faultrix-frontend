@@ -31,9 +31,13 @@ async function proxy(req: NextRequest, pathSegments: string[], method: string) {
   const search = req.nextUrl.search ?? ""
   const url = `${BACKEND}/${path}${search}`
 
+  // Priority: key sent by browser (user's own key) > env var fallback (dev/demo)
+  const userKey = req.headers.get("X-Faultrix-Key")
+  const resolvedKey = userKey ?? API_KEY
+
   const headers: HeadersInit = {
     "Content-Type": "application/json",
-    "X-API-Key": API_KEY,
+    "X-API-Key": resolvedKey,
   }
 
   let body: string | undefined

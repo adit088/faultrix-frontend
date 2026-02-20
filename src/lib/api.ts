@@ -7,8 +7,30 @@ import type {
   FailureInsight, ProxyRequest, ProxyResponse,
 } from "@/types"
 
-// Calls our own Next.js API proxy — API key never reaches the browser
+// Calls our own Next.js API proxy — key forwarded from localStorage via X-Faultrix-Key header
 const http = axios.create({ baseURL: "/api/proxy" })
+
+// Inject stored API key into every proxied request (read from localStorage at runtime)
+http.interceptors.request.use(config => {
+  if (typeof window !== "undefined") {
+    const key = localStorage.getItem("fx_api_key")
+    if (key) config.headers["X-Faultrix-Key"] = key
+  }
+  return config
+})
+
+// ─── Auth (public — no API key required) ──────────────────────────────────────
+export const authApi = {
+  register: (orgName: string, email: string) =>
+    axios.post<{ orgId: number; orgName: string; slug: string; apiKey: string; plan: string; maxRules: number; message: string }>(
+      "/api/auth/register", { orgName, email }
+    ).then(r => r.data),
+
+  login: (apiKey: string) =>
+    axios.post<{ orgId: number; orgName: string; slug: string; plan: string; maxRules: number; valid: boolean }>(
+      "/api/auth/login", { apiKey }
+    ).then(r => r.data),
+}
 
 // ─── Rules ────────────────────────────────────────────────────────────────────
 export const rulesApi = {
