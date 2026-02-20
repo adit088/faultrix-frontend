@@ -3,20 +3,27 @@ import { NextRequest, NextResponse } from "next/server"
 const BACKEND = process.env.BACKEND_URL ?? "https://faultrix-backend-production.up.railway.app/api/v1"
 const API_KEY = process.env.API_KEY ?? ""
 
-export async function GET(req: NextRequest, { params }: { params: { path: string[] } }) {
-  return proxy(req, params.path, "GET")
+type Params = Promise<{ path: string[] }>
+
+export async function GET(req: NextRequest, { params }: { params: Params }) {
+  const { path } = await params
+  return proxy(req, path, "GET")
 }
-export async function POST(req: NextRequest, { params }: { params: { path: string[] } }) {
-  return proxy(req, params.path, "POST")
+export async function POST(req: NextRequest, { params }: { params: Params }) {
+  const { path } = await params
+  return proxy(req, path, "POST")
 }
-export async function PUT(req: NextRequest, { params }: { params: { path: string[] } }) {
-  return proxy(req, params.path, "PUT")
+export async function PUT(req: NextRequest, { params }: { params: Params }) {
+  const { path } = await params
+  return proxy(req, path, "PUT")
 }
-export async function PATCH(req: NextRequest, { params }: { params: { path: string[] } }) {
-  return proxy(req, params.path, "PATCH")
+export async function PATCH(req: NextRequest, { params }: { params: Params }) {
+  const { path } = await params
+  return proxy(req, path, "PATCH")
 }
-export async function DELETE(req: NextRequest, { params }: { params: { path: string[] } }) {
-  return proxy(req, params.path, "DELETE")
+export async function DELETE(req: NextRequest, { params }: { params: Params }) {
+  const { path } = await params
+  return proxy(req, path, "DELETE")
 }
 
 async function proxy(req: NextRequest, pathSegments: string[], method: string) {
