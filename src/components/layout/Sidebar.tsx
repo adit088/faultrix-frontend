@@ -12,7 +12,6 @@ const nav = [
   { href: "/insights",     label: "AI Insights",  icon: "◎" },
   { href: "/proxy",        label: "HTTP Proxy",   icon: "⇢" },
   { href: "/webhooks",     label: "Webhooks",     icon: "⇆" },
-  { href: "/pricing",      label: "Upgrade",      icon: "✦", accent: true },
 ]
 
 interface SidebarProps {
@@ -24,11 +23,12 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
   const path = usePathname()
   return (
     <aside className={cn(
-      "fixed left-0 top-0 h-screen w-56 flex flex-col z-50 border-r border-[#1e1e2e] bg-[#0d0d15]/95 backdrop-blur-xl transition-transform duration-300",
-      "lg:translate-x-0",
-      open ? "translate-x-0" : "-translate-x-full"
+      "fixed left-0 top-0 h-screen w-64 flex flex-col z-50 border-r border-[#1e1e2e] bg-[#0d0d15]/98 backdrop-blur-xl transition-transform duration-300 ease-in-out",
+      "lg:translate-x-0 lg:w-56",
+      open ? "translate-x-0 shadow-2xl shadow-black/50" : "-translate-x-full"
     )}>
-      <div className="px-5 py-6 border-b border-[#1e1e2e] flex items-center justify-between">
+      {/* Header */}
+      <div className="px-5 py-5 border-b border-[#1e1e2e] flex items-center justify-between flex-shrink-0">
         <div>
           <div className="flex items-center gap-2">
             <div style={{ width: 32, height: 32, flexShrink: 0 }}>
@@ -60,16 +60,21 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
           </div>
           <p className="text-[10px] text-[#4a4a6a] mt-1 font-mono uppercase tracking-widest">Chaos Platform</p>
         </div>
+        {/* Close button — large tap target for mobile */}
         <button
           onClick={onClose}
-          className="lg:hidden text-[#4a4a6a] hover:text-[#e8e8f0] text-xl leading-none p-1"
+          className="lg:hidden w-10 h-10 flex items-center justify-center rounded-lg text-[#4a4a6a] hover:text-[#e8e8f0] hover:bg-[#1e1e2e] transition-all active:scale-95"
+          aria-label="Close menu"
         >
-          ✕
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path d="M12 4L4 12M4 4l8 8" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"/>
+          </svg>
         </button>
       </div>
 
+      {/* Nav */}
       <nav className="flex-1 p-3 space-y-0.5 overflow-y-auto">
-        {nav.map(({ href, label, icon, accent }) => {
+        {nav.map(({ href, label, icon }) => {
           const active = path.startsWith(href)
           return (
             <Link
@@ -77,29 +82,49 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
               href={href}
               onClick={onClose}
               className={cn(
-                "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all duration-200 group",
+                // min-h-[44px] ensures 44px tap target on mobile (Apple HIG)
+                "flex items-center gap-3 px-3 min-h-[44px] rounded-lg text-sm transition-all duration-200 group",
                 active
                   ? "bg-[#6c47ff]/20 text-[#a78bfa] border border-[#6c47ff]/30"
-                  : accent
-                  ? "text-[#00e5a0] hover:bg-[#00e5a0]/10 border border-transparent"
-                  : "text-[#8888aa] hover:text-[#e8e8f0] hover:bg-[#1e1e2e] border border-transparent"
+                  : "text-[#8888aa] hover:text-[#e8e8f0] hover:bg-[#1e1e2e] border border-transparent active:bg-[#1e1e2e]"
               )}
             >
-              <span className={cn("text-base transition-transform group-hover:scale-110", active && "text-[#6c47ff]")}>
+              <span className={cn("text-base transition-transform group-hover:scale-110 flex-shrink-0", active && "text-[#6c47ff]")}>
                 {icon}
               </span>
               <span className="font-medium">{label}</span>
-              {active && <div className="ml-auto w-1.5 h-1.5 rounded-full bg-[#6c47ff]" />}
+              {active && <div className="ml-auto w-1.5 h-1.5 rounded-full bg-[#6c47ff] flex-shrink-0" />}
             </Link>
           )
         })}
       </nav>
 
-      <div className="p-4 border-t border-[#1e1e2e]">
-        <div className="bg-[#111118] rounded-lg p-3">
+      {/* Upgrade CTA — prominent, full-width */}
+      <div className="p-3 flex-shrink-0">
+        <Link
+          href="/pricing"
+          onClick={onClose}
+          className={cn(
+            "flex items-center gap-3 px-3 min-h-[48px] rounded-xl text-sm font-semibold transition-all duration-200 w-full",
+            path.startsWith("/pricing")
+              ? "bg-[#00e5a0]/20 text-[#00e5a0] border border-[#00e5a0]/40"
+              : "bg-gradient-to-r from-[#6c47ff]/20 to-[#00e5a0]/10 text-[#00e5a0] border border-[#00e5a0]/30 hover:border-[#00e5a0]/60 hover:from-[#6c47ff]/30 hover:to-[#00e5a0]/20 active:scale-[0.98]"
+          )}
+        >
+          <span className="text-base flex-shrink-0">✦</span>
+          <span>Upgrade Plan</span>
+          <span className="ml-auto text-[10px] font-mono px-1.5 py-0.5 bg-[#00e5a0]/15 rounded border border-[#00e5a0]/30 flex-shrink-0">
+            PRO
+          </span>
+        </Link>
+      </div>
+
+      {/* Status */}
+      <div className="px-4 pb-4 flex-shrink-0">
+        <div className="bg-[#111118] rounded-lg p-3 border border-[#1e1e2e]">
           <p className="text-[10px] font-mono text-[#4a4a6a] uppercase tracking-wider">API Status</p>
           <div className="flex items-center gap-2 mt-1.5">
-            <div className="w-2 h-2 rounded-full bg-[#00e5a0] animate-pulse" />
+            <div className="w-2 h-2 rounded-full bg-[#00e5a0] animate-pulse flex-shrink-0" />
             <span className="text-xs text-[#8888aa]">Connected</span>
           </div>
         </div>

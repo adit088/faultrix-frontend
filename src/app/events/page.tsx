@@ -21,6 +21,12 @@ export default function EventsPage() {
     return () => clearInterval(interval)
   }, [])
 
+  const stats = [
+    { label: "Total Events",  value: loading ? "—" : fmt(analytics?.totalEvents ?? 0),       color: "#6c47ff" },
+    { label: "Injected",      value: loading ? "—" : fmt(analytics?.injectedCount ?? 0),      color: "#ff3b5c" },
+    { label: "Inject Rate",   value: loading ? "—" : pct(analytics?.injectionRate ?? 0),      color: "#00e5a0" },
+  ]
+
   return (
     <div className="space-y-4 lg:space-y-6 animate-slide-up">
       <div className="flex items-center justify-between">
@@ -34,15 +40,12 @@ export default function EventsPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-3 gap-3 lg:gap-4">
-        {[
-          { label: "Total Events", value: loading ? "—" : fmt(analytics?.totalEvents ?? 0), color: "#6c47ff" },
-          { label: "Injected", value: loading ? "—" : fmt(analytics?.injectedCount ?? 0), color: "#ff3b5c" },
-          { label: "Injection Rate", value: loading ? "—" : pct(analytics?.injectionRate ?? 0), color: "#00e5a0" },
-        ].map(s => (
+      {/* 3 stat cards — work on all screen sizes */}
+      <div className="grid grid-cols-3 gap-2 lg:gap-4">
+        {stats.map(s => (
           <div key={s.label} className="bg-[#111118] rounded-xl border border-[#1e1e2e] p-3 lg:p-4 text-center">
-            <p className="text-[10px] font-mono uppercase text-[#4a4a6a]">{s.label}</p>
-            <p className="text-xl lg:text-2xl font-bold font-mono mt-1" style={{ color: s.color }}>{s.value}</p>
+            <p className="text-[9px] lg:text-[10px] font-mono uppercase text-[#4a4a6a] leading-tight">{s.label}</p>
+            <p className="text-lg lg:text-2xl font-bold font-mono mt-1 tabular-nums" style={{ color: s.color }}>{s.value}</p>
           </div>
         ))}
       </div>

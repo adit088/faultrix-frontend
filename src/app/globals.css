@@ -9,6 +9,11 @@
   --fx-accent: #6c47ff;
   --fx-red: #ff3b5c;
   --fx-green: #00e5a0;
+  /* Safe area insets for iPhone notch / Dynamic Island / home bar */
+  --sat: env(safe-area-inset-top);
+  --sar: env(safe-area-inset-right);
+  --sab: env(safe-area-inset-bottom);
+  --sal: env(safe-area-inset-left);
 }
 
 * {
@@ -17,11 +22,32 @@
   padding: 0;
 }
 
+html {
+  /* Prevent horizontal scrollbar from appearing on mobile */
+  overflow-x: hidden;
+}
+
 body {
   background: var(--fx-bg);
   color: #e8e8f0;
   font-family: var(--font-syne), system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
+  /* Prevent content from going behind iPhone home bar */
+  padding-bottom: env(safe-area-inset-bottom);
+  /* Prevent horizontal overflow on mobile */
+  overflow-x: hidden;
+  /* Better touch scrolling on iOS */
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Tap highlight removal for cleaner mobile feel */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Ensure buttons have good touch targets */
+button, a {
+  touch-action: manipulation;
 }
 
 ::-webkit-scrollbar {
@@ -83,6 +109,15 @@ body {
   50%       { background-position: 100% 50%; }
 }
 
+/* Slide up animation */
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.animate-slide-up {
+  animation: slide-up 0.3s ease forwards;
+}
+
 /* Confidence bar */
 .confidence-fill {
   height: 4px;
@@ -109,4 +144,13 @@ body {
 @keyframes ping {
   0% { transform: scale(0.8); opacity: 0.8; }
   100% { transform: scale(1.8); opacity: 0; }
+}
+
+/* Slow pulse for CTA banners */
+@keyframes pulse-slow {
+  0%, 100% { opacity: 0.5; }
+  50%       { opacity: 1; }
+}
+.animate-pulse-slow {
+  animation: pulse-slow 3s ease-in-out infinite;
 }
