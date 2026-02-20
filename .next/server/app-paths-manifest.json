@@ -1,5 +1,10 @@
 {
   "/page": "app/page.js",
-  "/icon/route": "app/icon/route.js",
-  "/dashboard/page": "app/dashboard/page.js"
+  "/dashboard/page": "app/dashboard/page.js",
+  "/rules/page": "app/rules/page.js",
+  "/events/page": "app/events/page.js",
+  "/experiments/page": "app/experiments/page.js",
+  "/insights/page": "app/insights/page.js",
+  "/webhooks/page": "app/webhooks/page.js",
+  "/schedules/page": "app/schedules/page.js"
 }

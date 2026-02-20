@@ -30,7 +30,31 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
       <div className="px-5 py-6 border-b border-[#1e1e2e] flex items-center justify-between">
         <div>
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-[#6c47ff] flex items-center justify-center text-white font-bold text-sm">F</div>
+            <div style={{ width: 32, height: 32, flexShrink: 0 }}>
+              <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+                <defs>
+                  <linearGradient id="sbg" x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse">
+                    <stop offset="0%" stopColor="#6c47ff" />
+                    <stop offset="100%" stopColor="#a78bfa" />
+                  </linearGradient>
+                  <linearGradient id="crack" x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse">
+                    <stop offset="0%" stopColor="#6c47ff" />
+                    <stop offset="100%" stopColor="#00e5a0" />
+                  </linearGradient>
+                  <filter id="sglow">
+                    <feGaussianBlur stdDeviation="1.5" result="b" />
+                    <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+                  </filter>
+                </defs>
+                <rect width="32" height="32" rx="8" fill="#111118" />
+                <rect width="32" height="32" rx="8" fill="none" stroke="url(#sbg)" strokeWidth="0.8" opacity="0.6" />
+                <polygon points="4,4 17,4 17,14 10,14 10,10 4,10" fill="url(#sbg)" opacity="0.9" />
+                <polygon points="4,18 10,18 10,28 4,28" fill="url(#sbg)" opacity="0.7" />
+                <polygon points="20,6 28,6 28,26 20,26 20,20 24,20 24,12 20,12" fill="url(#sbg)" opacity="0.85" />
+                <line x1="4" y1="28" x2="28" y2="4" stroke="url(#crack)" strokeWidth="1.2" strokeLinecap="round" filter="url(#sglow)" />
+                <circle cx="27" cy="5" r="2.5" fill="#00e5a0" opacity="0.9" />
+              </svg>
+            </div>
             <span className="font-bold text-lg tracking-tight">Faultrix</span>
           </div>
           <p className="text-[10px] text-[#4a4a6a] mt-1 font-mono uppercase tracking-widest">Chaos Platform</p>
