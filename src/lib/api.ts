@@ -6,12 +6,8 @@ import type {
   WebhookConfig, KillSwitchStatus, TrafficStats, Page,
 } from "@/types"
 
-const BASE = process.env.NEXT_PUBLIC_API_URL ?? "https://faultrix-backend-production.up.railway.app/api/v1"
-
-const http = axios.create({
-  baseURL: BASE,
-  headers: { "X-API-Key": process.env.NEXT_PUBLIC_API_KEY ?? "ck_test_default_1234567890abcdef" },
-})
+// Calls our own Next.js API proxy — API key never reaches the browser
+const http = axios.create({ baseURL: "/api/proxy" })
 
 // ─── Rules ────────────────────────────────────────────────────────────────────
 export const rulesApi = {
