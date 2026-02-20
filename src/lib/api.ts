@@ -55,6 +55,7 @@ export const controlApi = {
 export const experimentsApi = {
   traffic: () => http.get<TrafficStats>("/experiments/traffic").then(r => r.data),
   reset: () => http.post("/experiments/control/reset"),
+  simulate: (users = 10) => http.post<string>(`/experiments/traffic/simulate?users=${users}`).then(r => r.data),
 }
 
 // ─── Webhooks ────────────────────────────────────────────────────────────────
