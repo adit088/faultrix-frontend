@@ -1,6 +1,6 @@
 "use client"
 import { usePathname } from "next/navigation"
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef } from "react"
 
 const titles: Record<string, string> = {
   "/dashboard":   "Dashboard",
@@ -23,6 +23,9 @@ export default function Topbar({ onMenuClick }: TopbarProps) {
   const title = Object.entries(titles).find(([k]) => path.startsWith(k))?.[1] ?? "Faultrix"
   const [time, setTime] = useState("")
   const [orgName, setOrgName] = useState("")
+  const [plan, setPlan] = useState("Free")
+  const [menuOpen, setMenuOpen] = useState(false)
+  const menuRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const tick = () => setTime(new Date().toLocaleTimeString("en-US", { hour12: false }))
@@ -34,8 +37,26 @@ export default function Topbar({ onMenuClick }: TopbarProps) {
   useEffect(() => {
     if (typeof window !== "undefined") {
       setOrgName(localStorage.getItem("fx_org_name") ?? "")
+      const storedPlan = localStorage.getItem("fx_plan")
+      if (storedPlan) setPlan(storedPlan.charAt(0).toUpperCase() + storedPlan.slice(1))
     }
   }, [])
+
+  // Close menu when clicking outside
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setMenuOpen(false)
+      }
+    }
+    if (menuOpen) document.addEventListener("mousedown", handleClickOutside)
+    return () => document.removeEventListener("mousedown", handleClickOutside)
+  }, [menuOpen])
+
+  const handleSignOut = () => {
+    localStorage.clear()
+    window.location.href = "/login"
+  }
 
   // First letter of org name for avatar
   const initial = orgName ? orgName[0].toUpperCase() : "U"
@@ -62,8 +83,59 @@ export default function Topbar({ onMenuClick }: TopbarProps) {
             {orgName}
           </span>
         )}
-        <div className="w-8 h-8 rounded-full bg-[#6c47ff]/30 border border-[#6c47ff]/50 flex items-center justify-center text-xs font-bold text-[#a78bfa] flex-shrink-0 select-none">
-          {initial}
+
+        {/* Avatar with dropdown */}
+        <div className="relative" ref={menuRef}>
+          <button
+            onClick={() => setMenuOpen(prev => !prev)}
+            className="w-8 h-8 rounded-full bg-[#6c47ff]/30 border border-[#6c47ff]/50 flex items-center justify-center text-xs font-bold text-[#a78bfa] flex-shrink-0 hover:border-[#6c47ff] hover:bg-[#6c47ff]/40 transition-all cursor-pointer select-none"
+            aria-label="User menu"
+            aria-expanded={menuOpen}
+          >
+            {initial}
+          </button>
+
+          {menuOpen && (
+            <div className="absolute right-0 top-10 bg-[#111118] border border-[#1e1e2e] rounded-xl shadow-2xl shadow-black/60 w-52 z-50 overflow-hidden animate-slide-up">
+              {/* Org info */}
+              <div className="px-4 py-3 border-b border-[#1e1e2e]">
+                <p className="text-xs text-[#e8e8f0] font-medium truncate">{orgName || "Organization"}</p>
+                <div className="flex items-center gap-1.5 mt-1">
+                  <span className="text-[10px] font-mono text-[#4a4a6a]">{plan} Plan</span>
+                  {plan.toLowerCase() !== "pro" && (
+                    <a
+                      href="/pricing"
+                      onClick={() => setMenuOpen(false)}
+                      className="text-[10px] font-mono text-[#00e5a0] hover:underline"
+                    >
+                      → Upgrade
+                    </a>
+                  )}
+                </div>
+              </div>
+
+              {/* Menu items */}
+              <div className="p-1">
+                <button
+                  onClick={() => { setMenuOpen(false); window.location.href = "/pricing" }}
+                  className="w-full text-left px-3 py-2.5 text-sm text-[#8888aa] hover:text-[#e8e8f0] hover:bg-[#1e1e2e] rounded-lg transition-colors flex items-center gap-2"
+                >
+                  <span className="text-base leading-none">✦</span>
+                  <span>Upgrade Plan</span>
+                </button>
+
+                <div className="border-t border-[#1e1e2e] my-1" />
+
+                <button
+                  onClick={handleSignOut}
+                  className="w-full text-left px-3 py-2.5 text-sm text-[#ff3b5c] hover:bg-[#ff3b5c]/10 rounded-lg transition-colors flex items-center gap-2"
+                >
+                  <span className="text-base leading-none">⎋</span>
+                  <span>Sign Out</span>
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </header>

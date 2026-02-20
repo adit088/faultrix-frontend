@@ -191,6 +191,9 @@ export interface ProxyRequest {
 export type ProxyChaosType =
   | "LATENCY" | "ERROR_4XX" | "ERROR_5XX"
   | "TIMEOUT" | "EXCEPTION" | "NONE"
+  | "PACKET_LOSS" | "DNS_FAILURE" | "BANDWIDTH_LIMIT"
+  | "CORRUPT_BODY" | "HEADER_INJECT" | "CPU_SPIKE"
+  | "MEMORY_PRESSURE" | "BLACKHOLE"
 
 export interface ProxyResponse {
   status: number
