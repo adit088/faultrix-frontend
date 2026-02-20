@@ -11,12 +11,22 @@ const BACKEND_URL = "https://faultrix-backend-production.up.railway.app/api/v1"
 const HTTP_METHODS = ["GET", "POST", "PUT", "PATCH", "DELETE"]
 
 const CHAOS_TYPE_COLORS: Record<ProxyChaosType, string> = {
-  LATENCY:   "text-[#f59e0b]",
-  ERROR_4XX: "text-[#ff3b5c]",
-  ERROR_5XX: "text-[#ff3b5c]",
-  TIMEOUT:   "text-[#ff3b5c]",
-  EXCEPTION: "text-[#ff3b5c]",
-  NONE:      "text-[#00e5a0]",
+  // Original types
+  LATENCY:        "text-[#f59e0b]",
+  ERROR_4XX:      "text-[#ff3b5c]",
+  ERROR_5XX:      "text-[#ff3b5c]",
+  TIMEOUT:        "text-[#ff3b5c]",
+  EXCEPTION:      "text-[#ff3b5c]",
+  NONE:           "text-[#00e5a0]",
+  // New types
+  PACKET_LOSS:    "text-[#ff3b5c]",
+  DNS_FAILURE:    "text-[#ff3b5c]",
+  BANDWIDTH_LIMIT:"text-[#f59e0b]",
+  CORRUPT_BODY:   "text-[#a78bfa]",
+  HEADER_INJECT:  "text-[#a78bfa]",
+  CPU_SPIKE:      "text-[#f59e0b]",
+  MEMORY_PRESSURE:"text-[#f59e0b]",
+  BLACKHOLE:      "text-[#ff3b5c]",
 }
 
 const CODE_EXAMPLES = {
