@@ -11,22 +11,20 @@ const BACKEND_URL = "https://faultrix-backend-production.up.railway.app/api/v1"
 const HTTP_METHODS = ["GET", "POST", "PUT", "PATCH", "DELETE"]
 
 const CHAOS_TYPE_COLORS: Record<ProxyChaosType, string> = {
-  // Original types
-  LATENCY:        "text-[#f59e0b]",
-  ERROR_4XX:      "text-[#ff3b5c]",
-  ERROR_5XX:      "text-[#ff3b5c]",
-  TIMEOUT:        "text-[#ff3b5c]",
-  EXCEPTION:      "text-[#ff3b5c]",
-  NONE:           "text-[#00e5a0]",
-  // New types
-  PACKET_LOSS:    "text-[#ff3b5c]",
-  DNS_FAILURE:    "text-[#ff3b5c]",
-  BANDWIDTH_LIMIT:"text-[#f59e0b]",
-  CORRUPT_BODY:   "text-[#a78bfa]",
-  HEADER_INJECT:  "text-[#a78bfa]",
-  CPU_SPIKE:      "text-[#f59e0b]",
-  MEMORY_PRESSURE:"text-[#f59e0b]",
-  BLACKHOLE:      "text-[#ff3b5c]",
+  LATENCY:          "text-[#f59e0b]",
+  ERROR_4XX:        "text-[#ff3b5c]",
+  ERROR_5XX:        "text-[#ff3b5c]",
+  TIMEOUT:          "text-[#ff3b5c]",
+  EXCEPTION:        "text-[#ff3b5c]",
+  NONE:             "text-[#00e5a0]",
+  PACKET_LOSS:      "text-[#ff3b5c]",
+  DNS_FAILURE:      "text-[#ff3b5c]",
+  BANDWIDTH_LIMIT:  "text-[#f59e0b]",
+  CORRUPT_BODY:     "text-[#ff3b5c]",
+  HEADER_INJECT:    "text-[#a78bfa]",
+  CPU_SPIKE:        "text-[#f59e0b]",
+  MEMORY_PRESSURE:  "text-[#f59e0b]",
+  BLACKHOLE:        "text-[#ff3b5c]",
 }
 
 const CODE_EXAMPLES = {
@@ -227,34 +225,38 @@ export default function ProxyPage() {
       </div>
 
       {/* ── Live Tester ── */}
-      <div className="bg-[#111118] border border-[#1e1e2e] rounded-xl p-5 space-y-4">
+      <div className="bg-[#111118] border border-[#1e1e2e] rounded-xl p-4 sm:p-5 space-y-4">
         <div className="flex items-center justify-between">
           <p className="text-sm font-semibold text-[#e8e8f0]">Live Tester</p>
-          <span className="text-[10px] font-mono text-[#4a4a6a]">Calls your backend proxy directly</span>
+          <span className="text-[10px] font-mono text-[#4a4a6a] hidden sm:block">Calls your backend proxy directly</span>
         </div>
 
-        {/* Method + URL */}
-        <div className="flex gap-2">
-          <select
-            value={method}
-            onChange={e => setMethod(e.target.value)}
-            className="bg-[#0a0a0f] border border-[#1e1e2e] rounded-lg px-3 py-2 text-sm text-[#e8e8f0] font-mono focus:outline-none focus:border-[#6c47ff] w-28 flex-shrink-0"
-          >
-            {HTTP_METHODS.map(m => <option key={m}>{m}</option>)}
-          </select>
-          <input
-            type="text"
-            value={url}
-            onChange={e => setUrl(e.target.value)}
-            placeholder="https://api.yourservice.com/endpoint"
-            onKeyDown={e => e.key === "Enter" && runProxy()}
-            className="flex-1 bg-[#0a0a0f] border border-[#1e1e2e] rounded-lg px-3 py-2 text-sm text-[#e8e8f0] font-mono focus:outline-none focus:border-[#6c47ff] placeholder:text-[#2a2a3a]"
-          />
+        {/* Method row — stacked on mobile, inline on sm+ */}
+        <div className="flex flex-col gap-2">
+          {/* Method + URL on same row, but URL takes full width below on mobile */}
+          <div className="flex gap-2">
+            <select
+              value={method}
+              onChange={e => setMethod(e.target.value)}
+              className="bg-[#0a0a0f] border border-[#1e1e2e] rounded-lg px-3 py-2.5 text-sm text-[#e8e8f0] font-mono focus:outline-none focus:border-[#6c47ff] w-24 flex-shrink-0"
+            >
+              {HTTP_METHODS.map(m => <option key={m}>{m}</option>)}
+            </select>
+            <input
+              type="text"
+              value={url}
+              onChange={e => setUrl(e.target.value)}
+              placeholder="https://api.yourservice.com/endpoint"
+              onKeyDown={e => e.key === "Enter" && runProxy()}
+              className="flex-1 min-w-0 bg-[#0a0a0f] border border-[#1e1e2e] rounded-lg px-3 py-2.5 text-sm text-[#e8e8f0] font-mono focus:outline-none focus:border-[#6c47ff] placeholder:text-[#2a2a3a]"
+            />
+          </div>
+          {/* Send button — full width on mobile, auto on larger */}
           <button
             onClick={runProxy}
             disabled={loading || !url.trim()}
             className={cn(
-              "px-5 py-2 rounded-lg text-sm font-semibold transition-all whitespace-nowrap flex items-center gap-2 flex-shrink-0",
+              "w-full sm:w-auto sm:self-end px-5 py-2.5 rounded-lg text-sm font-semibold transition-all flex items-center justify-center gap-2",
               loading || !url.trim()
                 ? "bg-[#1e1e2e] text-[#4a4a6a] cursor-not-allowed"
                 : "bg-[#6c47ff] text-white hover:bg-[#7c57ff] active:scale-95"
@@ -270,33 +272,34 @@ export default function ProxyPage() {
         {/* Headers */}
         <div>
           <p className="text-[10px] font-mono text-[#4a4a6a] uppercase tracking-wider mb-2">Headers (optional)</p>
-          <div className="flex gap-2 mb-2">
+          {/* Key + Value stacked on mobile */}
+          <div className="flex flex-col sm:flex-row gap-2 mb-2">
             <input
               value={headerKey}
               onChange={e => setHeaderKey(e.target.value)}
               placeholder="Key"
-              className="flex-1 bg-[#0a0a0f] border border-[#1e1e2e] rounded-lg px-3 py-1.5 text-xs text-[#e8e8f0] font-mono focus:outline-none focus:border-[#6c47ff] placeholder:text-[#2a2a3a]"
+              className="flex-1 bg-[#0a0a0f] border border-[#1e1e2e] rounded-lg px-3 py-2 text-xs text-[#e8e8f0] font-mono focus:outline-none focus:border-[#6c47ff] placeholder:text-[#2a2a3a]"
             />
             <input
               value={headerVal}
               onChange={e => setHeaderVal(e.target.value)}
               placeholder="Value"
               onKeyDown={e => e.key === "Enter" && addHeader()}
-              className="flex-1 bg-[#0a0a0f] border border-[#1e1e2e] rounded-lg px-3 py-1.5 text-xs text-[#e8e8f0] font-mono focus:outline-none focus:border-[#6c47ff] placeholder:text-[#2a2a3a]"
+              className="flex-1 bg-[#0a0a0f] border border-[#1e1e2e] rounded-lg px-3 py-2 text-xs text-[#e8e8f0] font-mono focus:outline-none focus:border-[#6c47ff] placeholder:text-[#2a2a3a]"
             />
             <button
               onClick={addHeader}
-              className="px-3 py-1.5 rounded-lg bg-[#1e1e2e] text-[#a78bfa] text-xs font-mono hover:bg-[#2a2a3a] transition-colors"
+              className="w-full sm:w-auto px-4 py-2 rounded-lg bg-[#1e1e2e] text-[#a78bfa] text-xs font-mono hover:bg-[#2a2a3a] transition-colors"
             >
               + Add
             </button>
           </div>
           {Object.entries(headers).map(([k, v]) => (
             <div key={k} className="flex items-center gap-2 mb-1">
-              <span className="text-[10px] font-mono text-[#a78bfa] bg-[#6c47ff]/10 px-2 py-0.5 rounded border border-[#6c47ff]/20">
+              <span className="text-[10px] font-mono text-[#a78bfa] bg-[#6c47ff]/10 px-2 py-0.5 rounded border border-[#6c47ff]/20 truncate max-w-[80%]">
                 {k}: {v}
               </span>
-              <button onClick={() => removeHeader(k)} className="text-[#4a4a6a] hover:text-[#ff3b5c] text-xs transition-colors">✕</button>
+              <button onClick={() => removeHeader(k)} className="text-[#4a4a6a] hover:text-[#ff3b5c] text-xs transition-colors flex-shrink-0">✕</button>
             </div>
           ))}
         </div>
@@ -318,7 +321,7 @@ export default function ProxyPage() {
 
       {/* ── Error ── */}
       {error && (
-        <div className="bg-[#ff3b5c]/10 border border-[#ff3b5c]/30 rounded-xl p-4 text-sm text-[#ff3b5c] font-mono">
+        <div className="bg-[#ff3b5c]/10 border border-[#ff3b5c]/30 rounded-xl p-4 text-sm text-[#ff3b5c] font-mono break-words">
           ⚠ {error}
         </div>
       )}
@@ -326,11 +329,11 @@ export default function ProxyPage() {
       {/* ── Result ── */}
       {result && (
         <div className={cn(
-          "rounded-xl border p-5 space-y-4",
+          "rounded-xl border p-4 sm:p-5 space-y-4",
           result.chaosInjected ? "bg-[#111118] border-[#ff3b5c]/40" : "bg-[#111118] border-[#00e5a0]/40"
         )}>
           {/* Result header */}
-          <div className="flex items-center justify-between flex-wrap gap-3">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
             <div className="flex items-center gap-3">
               <div className={cn(
                 "w-3 h-3 rounded-full flex-shrink-0",
@@ -340,26 +343,26 @@ export default function ProxyPage() {
                 "text-sm font-bold",
                 result.chaosInjected ? "text-[#ff3b5c]" : "text-[#00e5a0]"
               )}>
-                {result.chaosInjected ? `Chaos Injected — ${result.chaosType}` : "Clean Request — No Chaos"}
+                {result.chaosInjected ? `Chaos — ${result.chaosType}` : "Clean — No Chaos"}
               </span>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 pl-6 sm:pl-0">
               <StatusBadge status={result.status} />
               {result.injectedDelayMs > 0 && (
-                <span className="text-xs font-mono text-[#f59e0b]">+{result.injectedDelayMs}ms latency</span>
+                <span className="text-xs font-mono text-[#f59e0b]">+{result.injectedDelayMs}ms</span>
               )}
             </div>
           </div>
 
-          {/* Metadata grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          {/* Metadata grid — 2 cols on mobile, 4 on sm+ */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
             <div className="bg-[#0a0a0f] rounded-lg p-3 border border-[#1e1e2e]">
-              <p className="text-[9px] font-mono text-[#4a4a6a] uppercase tracking-wider">Target Matched</p>
+              <p className="text-[9px] font-mono text-[#4a4a6a] uppercase tracking-wider">Target</p>
               <p className="text-xs font-mono text-[#a78bfa] mt-1 truncate">{result.target}</p>
             </div>
             <div className="bg-[#0a0a0f] rounded-lg p-3 border border-[#1e1e2e]">
               <p className="text-[9px] font-mono text-[#4a4a6a] uppercase tracking-wider">Chaos Type</p>
-              <p className={cn("text-xs font-mono font-bold mt-1", result.chaosType ? CHAOS_TYPE_COLORS[result.chaosType] : "text-[#00e5a0]")}>
+              <p className={cn("text-xs font-mono font-bold mt-1 truncate", result.chaosType ? CHAOS_TYPE_COLORS[result.chaosType] : "text-[#00e5a0]")}>
                 {result.chaosType ?? "NONE"}
               </p>
             </div>
@@ -368,7 +371,7 @@ export default function ProxyPage() {
               <p className="text-[9px] font-mono text-[#8888aa] mt-1 truncate">{result.requestId}</p>
             </div>
             <div className="bg-[#0a0a0f] rounded-lg p-3 border border-[#1e1e2e]">
-              <p className="text-[9px] font-mono text-[#4a4a6a] uppercase tracking-wider">Delay Injected</p>
+              <p className="text-[9px] font-mono text-[#4a4a6a] uppercase tracking-wider">Delay</p>
               <p className="text-xs font-mono font-bold text-[#f59e0b] mt-1">{result.injectedDelayMs}ms</p>
             </div>
           </div>
@@ -380,9 +383,9 @@ export default function ProxyPage() {
               {Object.entries(result.headers)
                 .filter(([k]) => k.startsWith("X-Faultrix"))
                 .map(([k, v]) => (
-                  <div key={k} className="flex items-center gap-2 text-[10px] font-mono mb-1">
-                    <span className="text-[#6c47ff]">{k}:</span>
-                    <span className="text-[#e8e8f0]">{v}</span>
+                  <div key={k} className="flex items-start gap-2 text-[10px] font-mono mb-1 flex-wrap">
+                    <span className="text-[#6c47ff] flex-shrink-0">{k}:</span>
+                    <span className="text-[#e8e8f0] break-all">{v}</span>
                   </div>
                 ))
               }
@@ -400,7 +403,7 @@ export default function ProxyPage() {
               </button>
               {showBody && (
                 <div className="bg-[#0a0a0f] rounded-lg p-3 border border-[#1e1e2e] overflow-x-auto">
-                  <pre className="text-[10px] font-mono text-[#8888aa] whitespace-pre-wrap leading-relaxed">
+                  <pre className="text-[10px] font-mono text-[#8888aa] whitespace-pre-wrap leading-relaxed break-words">
                     {(() => {
                       try { return JSON.stringify(JSON.parse(result.body!), null, 2) }
                       catch { return result.body }
@@ -414,7 +417,7 @@ export default function ProxyPage() {
       )}
 
       {/* ── Integration Guide ── */}
-      <div className="bg-[#111118] border border-[#1e1e2e] rounded-xl p-5 space-y-4">
+      <div className="bg-[#111118] border border-[#1e1e2e] rounded-xl p-4 sm:p-5 space-y-4">
         <div>
           <p className="text-sm font-semibold text-[#e8e8f0] mb-1">Integration Guide</p>
           <p className="text-xs text-[#4a4a6a]">
@@ -425,29 +428,31 @@ export default function ProxyPage() {
 
         {/* Proxy endpoint box */}
         <div className="bg-[#0a0a0f] rounded-lg p-3 border border-[#6c47ff]/30 flex items-center justify-between gap-3">
-          <div>
+          <div className="min-w-0">
             <p className="text-[9px] font-mono text-[#4a4a6a] uppercase tracking-wider mb-1">Proxy Endpoint</p>
-            <p className="text-xs font-mono text-[#a78bfa]">POST {BACKEND_URL}/proxy/forward</p>
+            <p className="text-xs font-mono text-[#a78bfa] truncate">POST {BACKEND_URL}/proxy/forward</p>
           </div>
           <CopyButton text={`${BACKEND_URL}/proxy/forward`} />
         </div>
 
-        {/* Language tabs */}
-        <div className="flex items-center gap-1 bg-[#0a0a0f] border border-[#1e1e2e] rounded-lg p-1 w-fit">
-          {(["curl", "python", "node", "java"] as const).map(lang => (
-            <button
-              key={lang}
-              onClick={() => setActiveTab(lang)}
-              className={cn(
-                "text-[10px] font-mono px-3 py-1.5 rounded transition-all",
-                activeTab === lang
-                  ? "bg-[#6c47ff] text-white"
-                  : "text-[#4a4a6a] hover:text-[#e8e8f0]"
-              )}
-            >
-              {lang}
-            </button>
-          ))}
+        {/* Language tabs — scrollable on mobile */}
+        <div className="overflow-x-auto">
+          <div className="flex items-center gap-1 bg-[#0a0a0f] border border-[#1e1e2e] rounded-lg p-1 w-fit min-w-full sm:min-w-0">
+            {(["curl", "python", "node", "java"] as const).map(lang => (
+              <button
+                key={lang}
+                onClick={() => setActiveTab(lang)}
+                className={cn(
+                  "text-[10px] font-mono px-3 py-1.5 rounded transition-all whitespace-nowrap",
+                  activeTab === lang
+                    ? "bg-[#6c47ff] text-white"
+                    : "text-[#4a4a6a] hover:text-[#e8e8f0]"
+                )}
+              >
+                {lang}
+              </button>
+            ))}
+          </div>
         </div>
 
         <CodeBlock
@@ -457,24 +462,22 @@ export default function ProxyPage() {
       </div>
 
       {/* ── How target matching works ── */}
-      <div className="bg-[#111118] border border-[#1e1e2e] rounded-xl p-5">
+      <div className="bg-[#111118] border border-[#1e1e2e] rounded-xl p-4 sm:p-5">
         <p className="text-sm font-semibold text-[#e8e8f0] mb-3">How Target Matching Works</p>
         <p className="text-xs text-[#4a4a6a] mb-4">
           The proxy extracts the <span className="text-[#a78bfa] font-mono">path</span> from the upstream URL
           and matches it against your chaos rules — exact, prefix, or regex.
         </p>
-        <div className="space-y-2">
+        <div className="space-y-3">
           {[
             { url: "https://api.stripe.com/v1/charges", target: "/v1/charges", rule: "/v1/charges (EXACT)" },
             { url: "https://api.stripe.com/v1/charges/ch_123", target: "/v1/charges/ch_123", rule: "/v1/ (PREFIX)" },
             { url: "https://payments.svc/health", target: "/health", rule: "/health (EXACT)" },
           ].map(ex => (
-            <div key={ex.url} className="flex items-center gap-2 text-[10px] font-mono flex-wrap">
-              <span className="text-[#4a4a6a]">{ex.url}</span>
-              <span className="text-[#1e1e2e]">→</span>
-              <span className="text-[#a78bfa]">target: {ex.target}</span>
-              <span className="text-[#1e1e2e]">→</span>
-              <span className="text-[#00e5a0]">matches rule: {ex.rule}</span>
+            <div key={ex.url} className="text-[10px] font-mono space-y-0.5">
+              <p className="text-[#4a4a6a] truncate">{ex.url}</p>
+              <p className="text-[#a78bfa] pl-2">→ target: {ex.target}</p>
+              <p className="text-[#00e5a0] pl-2">→ matches: {ex.rule}</p>
             </div>
           ))}
         </div>
