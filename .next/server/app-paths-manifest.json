@@ -1,5 +1,5 @@
 {
-  "/dashboard/page": "app/dashboard/page.js",
-  "/webhooks/page": "app/webhooks/page.js",
-  "/insights/page": "app/insights/page.js"
+  "/page": "app/page.js",
+  "/icon/route": "app/icon/route.js",
+  "/dashboard/page": "app/dashboard/page.js"
 }
