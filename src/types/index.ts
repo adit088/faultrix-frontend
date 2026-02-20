@@ -1,7 +1,44 @@
 // ─── Enums ────────────────────────────────────────────────────────────────────
 export type ChaosType = "LATENCY" | "ERROR" | "EXCEPTION" | "BLACKHOLE" | "CPU" | "MEMORY"
 export type TargetingMode = "EXACT" | "PREFIX" | "REGEX"
-export type InsightLevel = "INFO" | "WARNING" | "CRITICAL"
+export type InsightLevel = "SUCCESS" | "INFO" | "WARNING" | "CRITICAL"
+
+export type InsightType =
+  | "CASCADING_FAILURE" | "FAILURE_OVERRUN" | "CIRCUIT_BREAKER_MISSING" | "RETRY_STORM"
+  | "LATENCY_AMPLIFICATION" | "TIMEOUT_MISSING" | "SLOW_RECOVERY"
+  | "LOW_SAMPLE_BIAS" | "PEAK_HOUR_FRAGILITY" | "BLAST_RADIUS_MISMATCH"
+  | "RESOURCE_EXHAUSTION" | "QUEUE_BUILDUP" | "RATE_LIMIT_HIT"
+  | "MISSING_FALLBACK" | "CACHE_POISONING" | "DEPENDENCY_HELL"
+  | "RESILIENT_SYSTEM" | "OPTIMAL_RECOVERY" | "GOOD_ISOLATION"
+
+export interface FailureInsight {
+  type: InsightType
+  level: InsightLevel
+  title: string
+  message: string
+  recommendation: string
+  // Metadata
+  confidenceScore?: number
+  affectedRequests?: number
+  observedFailureRate?: number
+  expectedFailureRate?: number
+  avgRecoveryTimeMs?: number
+  firstDetected?: string
+  lastDetected?: string
+  // Impact
+  estimatedImpact?: string
+  estimatedCost?: string
+  priorityScore?: number
+  // Actionable
+  relatedTargets?: string[]
+  suggestedFixes?: string[]
+  codeSnippet?: string
+  documentationUrl?: string
+  // Trend
+  trend?: "WORSENING" | "STABLE" | "IMPROVING" | "NEW"
+  occurrenceCount?: number
+  trendPercentage?: number
+}
 
 // ─── Chaos Rules ──────────────────────────────────────────────────────────────
 export interface ChaosRuleResponse {
