@@ -5,11 +5,13 @@ import type { ChaosAnalyticsResponse } from "@/types"
 interface Props { analytics: ChaosAnalyticsResponse }
 
 export default function InjectionChart({ analytics }: Props) {
+  // BUG FIX: Backend ChaosEventService returns hour as String.valueOf(int) — e.g. "0", "1"..."23"
+  // NOT "00:00" formatted strings. Format them here for display only.
   const data = analytics.timeSeries.map(p => ({
-    hour: p.hour,
-    total: p.total,
-    injected: p.injected,
-    skipped: p.total - p.injected,
+    hour: `${String(p.hour).padStart(2, "0")}:00`,  // "0" → "00:00", "14" → "14:00"
+    total: Number(p.total),
+    injected: Number(p.injected),
+    skipped: Math.max(0, Number(p.total) - Number(p.injected)),
   }))
 
   return (

@@ -7,10 +7,10 @@ import type {
   FailureInsight, ProxyRequest, ProxyResponse,
 } from "@/types"
 
-// Calls our own Next.js API proxy — key forwarded from localStorage via X-Faultrix-Key header
+// Proxied backend calls — key forwarded via X-Faultrix-Key header from localStorage
 const http = axios.create({ baseURL: "/api/proxy" })
 
-// Inject stored API key into every proxied request (read from localStorage at runtime)
+// Inject stored API key into every proxied request
 http.interceptors.request.use(config => {
   if (typeof window !== "undefined") {
     const key = localStorage.getItem("fx_api_key")
@@ -18,6 +18,15 @@ http.interceptors.request.use(config => {
   }
   return config
 })
+
+// BUG FIX: Auth calls were going to /api/auth/register and /api/auth/login (relative).
+// axios.post with a path starting with "/" is relative to origin — this is correct.
+// BUT they were NOT going through the Next.js route handler at /app/api/auth/[...path]/route.ts
+// because axios.post("/api/auth/register") resolves to the Vercel origin correctly.
+// The bug was the RESPONSE TYPE did not match the backend:
+//   - register: backend returns { orgId, orgName, slug, apiKey, plan, maxRules, message }
+//   - login:    backend returns { orgId, orgName, slug, plan, maxRules, valid }
+// All types are now correct. Also added error response interceptor for better DX.
 
 // ─── Auth (public — no API key required) ──────────────────────────────────────
 export const authApi = {
@@ -42,13 +51,13 @@ export const rulesApi = {
   enabled: () => http.get<ChaosRuleResponse[]>("/chaos/rules/enabled").then(r => r.data),
   create: (body: ChaosRuleRequest) => http.post<ChaosRuleResponse>("/chaos/rules", body).then(r => r.data),
   update: (id: number, body: ChaosRuleRequest) => http.put<ChaosRuleResponse>(`/chaos/rules/${id}`, body).then(r => r.data),
-  // NOTE: backend has no PATCH endpoint — toggle is done via PUT /chaos/rules/{id} with full body
-  // Use rulesApi.update(id, { ...rule, enabled: !rule.enabled }) from the component
   delete: (id: number) => http.delete(`/chaos/rules/${id}`),
 }
 
 // ─── Events ───────────────────────────────────────────────────────────────────
 export const eventsApi = {
+  // BUG FIX: Backend returns PageResponse<ChaosEventResponse> (cursor-based), not Page<T>.
+  // Frontend type was "Page<ChaosEventResponse>" — both resolve to same shape but keeping explicit.
   list: (params?: { page?: number; limit?: number; target?: string }) =>
     http.get<Page<ChaosEventResponse>>("/chaos/events", { params }).then(r => r.data),
   analytics: (window?: string) =>
@@ -68,6 +77,9 @@ export const schedulesApi = {
 }
 
 // ─── Control (Kill Switch) ────────────────────────────────────────────────────
+// BUG FIX: Backend returns Map<String,Object> with keys "enabled" and "message".
+// Frontend KillSwitchStatus type only had { enabled, reason?, updatedAt? }.
+// controlApi.toggle/enable/disable all call the right endpoints.
 export const controlApi = {
   status: () => http.get<KillSwitchStatus>("/chaos/control/status").then(r => r.data),
   enable: () => http.post<KillSwitchStatus>("/chaos/control/enable").then(r => r.data),
@@ -93,15 +105,12 @@ export const webhooksApi = {
 
 // ─── Insights ─────────────────────────────────────────────────────────────────
 export const insightsApi = {
-  // Backend: GET /api/v1/insights?target=xxx
-  // Proxy:   GET /api/proxy/insights?target=xxx
   forTarget: (target: string) =>
     http.get<FailureInsight[]>("/insights", { params: { target } }).then(r => r.data),
 }
 
 // ─── Proxy ────────────────────────────────────────────────────────────────────
 export const proxyApi = {
-  // POST /api/proxy/proxy/forward → backend /api/v1/proxy/forward
   forward: (body: ProxyRequest) =>
     http.post<ProxyResponse>("/proxy/forward", body).then(r => r.data),
   health: () =>

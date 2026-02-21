@@ -21,7 +21,6 @@ export interface FailureInsight {
   title: string
   message: string
   recommendation: string
-  // Metadata
   confidenceScore?: number
   affectedRequests?: number
   observedFailureRate?: number
@@ -29,16 +28,13 @@ export interface FailureInsight {
   avgRecoveryTimeMs?: number
   firstDetected?: string
   lastDetected?: string
-  // Impact
   estimatedImpact?: string
   estimatedCost?: string
   priorityScore?: number
-  // Actionable
   relatedTargets?: string[]
   suggestedFixes?: string[]
   codeSnippet?: string
   documentationUrl?: string
-  // Trend
   trend?: "WORSENING" | "STABLE" | "IMPROVING" | "NEW"
   occurrenceCount?: number
   trendPercentage?: number
@@ -114,13 +110,17 @@ export interface ChaosAnalyticsResponse {
   avgInjectedLatencyMs?: number
   topTargets: { target: string; injectionCount: number }[]
   typeBreakdown: Record<ChaosType, number>
+  // BUG FIX: Backend ChaosEventService.getAnalytics() returns hour as a string from
+  // EXTRACT(HOUR ...) cast via String.valueOf(((Number) row[0]).intValue()).
+  // This is a plain integer string ("0"–"23"), NOT an HH:mm formatted string like "00:00".
+  // InjectionChart.tsx was trying to match these as if they were pre-formatted — fixed in chart.
   timeSeries: { hour: string; total: number; injected: number; avgDelayMs?: number }[]
 }
 
 // ─── Schedules ────────────────────────────────────────────────────────────────
 export interface ChaosScheduleResponse {
   id: number
-  chaosRuleId: number       // backend field is chaosRuleId, not ruleId
+  chaosRuleId: number
   organizationId: number
   name: string
   enabled: boolean
@@ -149,11 +149,11 @@ export interface WebhookConfig {
   organizationId: number
   name: string
   url: string
-  hasSecret: boolean        // backend never returns raw secret; only whether one is set
+  hasSecret: boolean
   enabled: boolean
-  onInjection: boolean      // fire on chaos.injected events
-  onSkipped: boolean        // fire on chaos.skipped events
-  chaosTypes?: string       // CSV of ChaosType names to filter, null = all types
+  onInjection: boolean
+  onSkipped: boolean
+  chaosTypes?: string
   createdAt: string
   updatedAt: string
 }
@@ -169,10 +169,13 @@ export interface WebhookDelivery {
 }
 
 // ─── Control ──────────────────────────────────────────────────────────────────
+// BUG FIX: Backend ChaosControlController returns Map.of("enabled", ..., "message", ...)
+// The "reason" and "updatedAt" fields don't exist in the backend response.
+// Frontend was trying to read them but they were always undefined.
+// Fixed: use "message" (what backend actually sends).
 export interface KillSwitchStatus {
   enabled: boolean
-  reason?: string
-  updatedAt?: string
+  message?: string   // backend sends "enabled" + "message" — previously "reason" which didn't exist
 }
 
 // ─── Experiments ─────────────────────────────────────────────────────────────
@@ -183,7 +186,7 @@ export interface TrafficStats {
   injectionRate: number
 }
 
-// Backend returns PageResponse<T> with cursor-based pagination (not offset-based)
+// Cursor-based pagination (matches backend PageResponse<T>)
 export interface PageResponse<T> {
   data: T[]
   pagination: {
@@ -194,7 +197,7 @@ export interface PageResponse<T> {
   }
 }
 
-// Legacy type kept for events list endpoint (also uses PageResponse shape)
+// Alias kept for backwards compat — events endpoint also returns this shape
 export interface Page<T> {
   data: T[]
   pagination: {
