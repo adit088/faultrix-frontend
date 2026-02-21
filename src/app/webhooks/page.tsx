@@ -29,10 +29,22 @@ export default function WebhooksPage() {
   useEffect(() => { load() }, [])
 
   const toggleHook = async (hook: WebhookConfig) => {
+    // Optimistic update
+    setWebhooks(w => w.map(h => h.id === hook.id ? { ...h, enabled: !h.enabled } : h))
     try {
-      setWebhooks(w => w.map(h => h.id === hook.id ? { ...h, enabled: !h.enabled } : h))
-      await webhooksApi.update(hook.id, { enabled: !hook.enabled })
+      // FIX BUG-8: backend WebhookRequest has @NotBlank on name and @NotBlank @URL on url.
+      // Sending only { enabled } returns HTTP 400. Must send the full object every time.
+      await webhooksApi.update(hook.id, {
+        name:        hook.name,
+        url:         hook.url,
+        enabled:     !hook.enabled,
+        onInjection: hook.onInjection,
+        onSkipped:   hook.onSkipped,
+        chaosTypes:  hook.chaosTypes,
+        // secret intentionally omitted — backend only updates secret when the field is non-null
+      })
     } catch {
+      // Roll back optimistic update on failure
       setWebhooks(w => w.map(h => h.id === hook.id ? { ...h, enabled: hook.enabled } : h))
     }
   }
@@ -51,7 +63,6 @@ export default function WebhooksPage() {
     if (!name.trim() || !url.trim()) return
     setSaving(true)
     try {
-      // Backend WebhookRequest: name (NotBlank), url (NotBlank @URL), onInjection, onSkipped, secret, chaosTypes
       const created = await webhooksApi.create({
         name: name.trim(),
         url: url.trim(),
