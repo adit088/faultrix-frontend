@@ -35,20 +35,21 @@ export const authApi = {
 // ─── Rules ────────────────────────────────────────────────────────────────────
 export const rulesApi = {
   list: () => http.get<ChaosRuleResponse[]>("/chaos/rules").then(r => r.data),
-  paginated: (page = 0, size = 20) =>
-    http.get<Page<ChaosRuleResponse>>("/chaos/rules/paginated", { params: { page, size } }).then(r => r.data),
+  paginated: (cursor?: number, limit = 20) =>
+    http.get<Page<ChaosRuleResponse>>("/chaos/rules/paginated", { params: { cursor, limit } }).then(r => r.data),
   get: (id: number) => http.get<ChaosRuleResponse>(`/chaos/rules/${id}`).then(r => r.data),
   stats: () => http.get<ChaosRuleStats>("/chaos/rules/stats").then(r => r.data),
   enabled: () => http.get<ChaosRuleResponse[]>("/chaos/rules/enabled").then(r => r.data),
   create: (body: ChaosRuleRequest) => http.post<ChaosRuleResponse>("/chaos/rules", body).then(r => r.data),
   update: (id: number, body: ChaosRuleRequest) => http.put<ChaosRuleResponse>(`/chaos/rules/${id}`, body).then(r => r.data),
-  toggle: (id: number, enabled: boolean) => http.patch<ChaosRuleResponse>(`/chaos/rules/${id}`, { enabled }).then(r => r.data),
+  // NOTE: backend has no PATCH endpoint — toggle is done via PUT /chaos/rules/{id} with full body
+  // Use rulesApi.update(id, { ...rule, enabled: !rule.enabled }) from the component
   delete: (id: number) => http.delete(`/chaos/rules/${id}`),
 }
 
 // ─── Events ───────────────────────────────────────────────────────────────────
 export const eventsApi = {
-  list: (params?: { page?: number; size?: number; target?: string }) =>
+  list: (params?: { page?: number; limit?: number; target?: string }) =>
     http.get<Page<ChaosEventResponse>>("/chaos/events", { params }).then(r => r.data),
   analytics: (window?: string) =>
     http.get<ChaosAnalyticsResponse>("/chaos/events/analytics", { params: { window } }).then(r => r.data),
@@ -83,9 +84,9 @@ export const experimentsApi = {
 // ─── Webhooks ────────────────────────────────────────────────────────────────
 export const webhooksApi = {
   list: () => http.get<WebhookConfig[]>("/chaos/events/webhooks").then(r => r.data),
-  create: (body: Partial<WebhookConfig>) =>
+  create: (body: { name: string; url: string; secret?: string; enabled?: boolean; onInjection?: boolean; onSkipped?: boolean; chaosTypes?: string }) =>
     http.post<WebhookConfig>("/chaos/events/webhooks", body).then(r => r.data),
-  update: (id: number, body: Partial<WebhookConfig>) =>
+  update: (id: number, body: { name?: string; url?: string; secret?: string; enabled?: boolean; onInjection?: boolean; onSkipped?: boolean; chaosTypes?: string }) =>
     http.put<WebhookConfig>(`/chaos/events/webhooks/${id}`, body).then(r => r.data),
   delete: (id: number) => http.delete(`/chaos/events/webhooks/${id}`),
 }

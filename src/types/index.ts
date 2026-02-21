@@ -1,5 +1,9 @@
 // ─── Enums ────────────────────────────────────────────────────────────────────
-export type ChaosType = "LATENCY" | "ERROR" | "EXCEPTION" | "BLACKHOLE" | "CPU" | "MEMORY"
+export type ChaosType =
+  | "LATENCY" | "ERROR_4XX" | "ERROR_5XX" | "TIMEOUT"
+  | "EXCEPTION" | "PACKET_LOSS" | "DNS_FAILURE" | "BANDWIDTH_LIMIT"
+  | "CORRUPT_BODY" | "HEADER_INJECT" | "CPU_SPIKE" | "MEMORY_PRESSURE"
+  | "BLACKHOLE" | "NONE"
 export type TargetingMode = "EXACT" | "PREFIX" | "REGEX"
 export type InsightLevel = "SUCCESS" | "INFO" | "WARNING" | "CRITICAL"
 
@@ -116,7 +120,8 @@ export interface ChaosAnalyticsResponse {
 // ─── Schedules ────────────────────────────────────────────────────────────────
 export interface ChaosScheduleResponse {
   id: number
-  ruleId: number
+  chaosRuleId: number       // backend field is chaosRuleId, not ruleId
+  organizationId: number
   name: string
   enabled: boolean
   daysOfWeek: string
@@ -124,6 +129,8 @@ export interface ChaosScheduleResponse {
   endTime: string
   activeFrom?: string
   activeUntil?: string
+  createdAt?: string
+  updatedAt?: string
 }
 
 export interface ChaosScheduleRequest {
@@ -139,11 +146,16 @@ export interface ChaosScheduleRequest {
 // ─── Webhooks ─────────────────────────────────────────────────────────────────
 export interface WebhookConfig {
   id: number
+  organizationId: number
+  name: string
   url: string
-  secret?: string
+  hasSecret: boolean        // backend never returns raw secret; only whether one is set
   enabled: boolean
-  events: string[]
+  onInjection: boolean      // fire on chaos.injected events
+  onSkipped: boolean        // fire on chaos.skipped events
+  chaosTypes?: string       // CSV of ChaosType names to filter, null = all types
   createdAt: string
+  updatedAt: string
 }
 
 export interface WebhookDelivery {
@@ -171,13 +183,26 @@ export interface TrafficStats {
   injectionRate: number
 }
 
-// ─── Paginated ────────────────────────────────────────────────────────────────
+// Backend returns PageResponse<T> with cursor-based pagination (not offset-based)
+export interface PageResponse<T> {
+  data: T[]
+  pagination: {
+    nextCursor: number | null
+    hasMore: boolean
+    count: number
+    limit: number
+  }
+}
+
+// Legacy type kept for events list endpoint (also uses PageResponse shape)
 export interface Page<T> {
-  content: T[]
-  totalElements: number
-  totalPages: number
-  number: number
-  size: number
+  data: T[]
+  pagination: {
+    nextCursor: number | null
+    hasMore: boolean
+    count: number
+    limit: number
+  }
 }
 
 // ─── Proxy ────────────────────────────────────────────────────────────────────

@@ -7,21 +7,19 @@ import type { ChaosRuleResponse, ChaosScheduleResponse, ChaosScheduleRequest } f
 const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
 const hours = Array.from({ length: 24 }, (_, i) => `${String(i).padStart(2, "0")}:00`)
 
+// Backend uses numeric days: 1=Mon, 2=Tue, ... 7=Sun (ISO week)
 function isScheduleActive(schedules: ChaosScheduleResponse[], day: number, hour: number) {
   if (schedules.length === 0) {
-    // Default heatmap for empty state
     const biz = day < 5 && hour >= 9 && hour < 18
     const peak = day < 5 && (hour === 10 || hour === 14 || hour === 16)
     return { active: biz, peak }
   }
-  // Check real schedules
-  const dayNames = ["MONDAY","TUESDAY","WEDNESDAY","THURSDAY","FRIDAY","SATURDAY","SUNDAY"]
-  const dayName = dayNames[day]
-  const hourStr = `${String(hour).padStart(2,"0")}:00`
+  const dayNum = String(day + 1) // 0-indexed UI → 1=Mon ISO
+  const hourStr = `${String(hour).padStart(2, "0")}:00`
   const active = schedules.some(s => {
     if (!s.enabled) return false
     const daysArr = s.daysOfWeek?.split(",") ?? []
-    if (!daysArr.includes(dayName)) return false
+    if (!daysArr.includes(dayNum)) return false
     return hourStr >= s.startTime && hourStr < s.endTime
   })
   return { active, peak: false }
@@ -30,7 +28,7 @@ function isScheduleActive(schedules: ChaosScheduleResponse[], day: number, hour:
 const defaultForm: ChaosScheduleRequest = {
   name: "",
   enabled: true,
-  daysOfWeek: "MONDAY,TUESDAY,WEDNESDAY,THURSDAY,FRIDAY",
+  daysOfWeek: "1,2,3,4,5",  // Mon–Fri in numeric ISO format (backend validates ^[1-7](,[1-7])*$)
   startTime: "09:00",
   endTime: "18:00",
 }
@@ -129,7 +127,7 @@ export default function SchedulesPage() {
             </div>
             <div>
               <label className="text-[10px] font-mono uppercase text-[#4a4a6a] block mb-1">Days of Week</label>
-              <input value={form.daysOfWeek} onChange={e => setForm(f => ({ ...f, daysOfWeek: e.target.value }))} placeholder="MONDAY,TUESDAY,..." className="w-full bg-[#0a0a0f] border border-[#1e1e2e] rounded-lg px-3 py-2 text-sm text-[#e8e8f0] focus:border-[#6c47ff] outline-none" />
+              <input value={form.daysOfWeek} onChange={e => setForm(f => ({ ...f, daysOfWeek: e.target.value }))} placeholder="1,2,3,4,5 (1=Mon … 7=Sun)" className="w-full bg-[#0a0a0f] border border-[#1e1e2e] rounded-lg px-3 py-2 text-sm text-[#e8e8f0] focus:border-[#6c47ff] outline-none" />
             </div>
             <div>
               <label className="text-[10px] font-mono uppercase text-[#4a4a6a] block mb-1">Start Time</label>

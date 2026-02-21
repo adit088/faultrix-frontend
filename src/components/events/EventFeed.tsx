@@ -5,10 +5,20 @@ import { eventsApi } from "@/lib/api"
 import type { ChaosEventResponse } from "@/types"
 
 const typeColors: Record<string, string> = {
-  LATENCY:   "text-[#f59e0b] border-[#f59e0b]/30 bg-[#f59e0b]/10",
-  ERROR:     "text-[#ff3b5c] border-[#ff3b5c]/30 bg-[#ff3b5c]/10",
-  EXCEPTION: "text-[#ff6b35] border-[#ff6b35]/30 bg-[#ff6b35]/10",
-  BLACKHOLE: "text-[#8888aa] border-[#8888aa]/30 bg-[#8888aa]/10",
+  LATENCY:          "text-[#f59e0b] border-[#f59e0b]/30 bg-[#f59e0b]/10",
+  ERROR_4XX:        "text-[#ff3b5c] border-[#ff3b5c]/30 bg-[#ff3b5c]/10",
+  ERROR_5XX:        "text-[#ff3b5c] border-[#ff3b5c]/30 bg-[#ff3b5c]/10",
+  TIMEOUT:          "text-[#ff3b5c] border-[#ff3b5c]/30 bg-[#ff3b5c]/10",
+  EXCEPTION:        "text-[#ff6b35] border-[#ff6b35]/30 bg-[#ff6b35]/10",
+  PACKET_LOSS:      "text-[#ff3b5c] border-[#ff3b5c]/30 bg-[#ff3b5c]/10",
+  DNS_FAILURE:      "text-[#ff3b5c] border-[#ff3b5c]/30 bg-[#ff3b5c]/10",
+  BANDWIDTH_LIMIT:  "text-[#f59e0b] border-[#f59e0b]/30 bg-[#f59e0b]/10",
+  CORRUPT_BODY:     "text-[#ff6b35] border-[#ff6b35]/30 bg-[#ff6b35]/10",
+  HEADER_INJECT:    "text-[#a78bfa] border-[#a78bfa]/30 bg-[#a78bfa]/10",
+  CPU_SPIKE:        "text-[#f59e0b] border-[#f59e0b]/30 bg-[#f59e0b]/10",
+  MEMORY_PRESSURE:  "text-[#f59e0b] border-[#f59e0b]/30 bg-[#f59e0b]/10",
+  BLACKHOLE:        "text-[#8888aa] border-[#8888aa]/30 bg-[#8888aa]/10",
+  NONE:             "text-[#4a4a6a] border-[#4a4a6a]/30 bg-[#4a4a6a]/10",
 }
 
 function EventRow({ ev }: { ev: ChaosEventResponse }) {
@@ -37,8 +47,8 @@ export default function EventFeed({ limit = 8 }: { limit?: number }) {
   useEffect(() => {
     async function poll() {
       try {
-        const page = await eventsApi.list({ page: 0, size: limit })
-        setEvents(page.content ?? [])
+        const page = await eventsApi.list({ page: 0, limit })
+        setEvents(page.data ?? [])
         setConnecting(false)
       } catch {
         // Keep showing last known events, just don't crash
