@@ -4,8 +4,8 @@ import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
 
 const nav = [
-  { href: "/dashboard",    label: "Dashboard",    icon: "◈" },
-  { href: "/rules",        label: "Chaos Rules",  icon: "⚡" },
+  { href: "/dashboard",    label: "Dashboard",    icon: "⬡" },
+  { href: "/rules",        label: "Chaos Rules",  icon: "◈" },
   { href: "/events",       label: "Live Events",  icon: "⚡" },
   { href: "/schedules",    label: "Schedules",    icon: "⏱" },
   { href: "/experiments",  label: "Experiments",  icon: "⚗" },

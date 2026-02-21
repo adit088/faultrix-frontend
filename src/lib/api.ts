@@ -19,14 +19,17 @@ http.interceptors.request.use(config => {
   return config
 })
 
-// BUG FIX: Auth calls were going to /api/auth/register and /api/auth/login (relative).
-// axios.post with a path starting with "/" is relative to origin — this is correct.
-// BUT they were NOT going through the Next.js route handler at /app/api/auth/[...path]/route.ts
-// because axios.post("/api/auth/register") resolves to the Vercel origin correctly.
-// The bug was the RESPONSE TYPE did not match the backend:
-//   - register: backend returns { orgId, orgName, slug, apiKey, plan, maxRules, message }
-//   - login:    backend returns { orgId, orgName, slug, plan, maxRules, valid }
-// All types are now correct. Also added error response interceptor for better DX.
+// Auto-logout on 401 — invalid/expired key redirects to login
+http.interceptors.response.use(
+  res => res,
+  err => {
+    if (err.response?.status === 401 && typeof window !== "undefined") {
+      localStorage.clear()
+      window.location.href = "/login"
+    }
+    return Promise.reject(err)
+  }
+)
 
 // ─── Auth (public — no API key required) ──────────────────────────────────────
 export const authApi = {
@@ -56,8 +59,6 @@ export const rulesApi = {
 
 // ─── Events ───────────────────────────────────────────────────────────────────
 export const eventsApi = {
-  // BUG FIX: Backend returns PageResponse<ChaosEventResponse> (cursor-based), not Page<T>.
-  // Frontend type was "Page<ChaosEventResponse>" — both resolve to same shape but keeping explicit.
   list: (params?: { page?: number; limit?: number; target?: string }) =>
     http.get<Page<ChaosEventResponse>>("/chaos/events", { params }).then(r => r.data),
   analytics: (window?: string) =>
@@ -77,9 +78,6 @@ export const schedulesApi = {
 }
 
 // ─── Control (Kill Switch) ────────────────────────────────────────────────────
-// BUG FIX: Backend returns Map<String,Object> with keys "enabled" and "message".
-// Frontend KillSwitchStatus type only had { enabled, reason?, updatedAt? }.
-// controlApi.toggle/enable/disable all call the right endpoints.
 export const controlApi = {
   status: () => http.get<KillSwitchStatus>("/chaos/control/status").then(r => r.data),
   enable: () => http.post<KillSwitchStatus>("/chaos/control/enable").then(r => r.data),
