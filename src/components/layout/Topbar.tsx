@@ -1,6 +1,7 @@
 "use client"
 import { usePathname } from "next/navigation"
 import { useEffect, useState, useRef } from "react"
+import type { SessionInfo } from "./Shell"
 
 const titles: Record<string, string> = {
   "/dashboard":   "Dashboard",
@@ -16,14 +17,13 @@ const titles: Record<string, string> = {
 
 interface TopbarProps {
   onMenuClick: () => void
+  session: SessionInfo   // org metadata passed from Shell — never the API key
 }
 
-export default function Topbar({ onMenuClick }: TopbarProps) {
+export default function Topbar({ onMenuClick, session }: TopbarProps) {
   const path = usePathname()
   const title = Object.entries(titles).find(([k]) => path.startsWith(k))?.[1] ?? "Faultrix"
   const [time, setTime] = useState("")
-  const [orgName, setOrgName] = useState("")
-  const [plan, setPlan] = useState("Free")
   const [menuOpen, setMenuOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
 
@@ -35,15 +35,6 @@ export default function Topbar({ onMenuClick }: TopbarProps) {
   }, [])
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      setOrgName(localStorage.getItem("fx_org_name") ?? "")
-      const storedPlan = localStorage.getItem("fx_plan")
-      if (storedPlan) setPlan(storedPlan.charAt(0).toUpperCase() + storedPlan.slice(1))
-    }
-  }, [])
-
-  // Close menu when clicking outside
-  useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
       if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
         setMenuOpen(false)
@@ -53,13 +44,22 @@ export default function Topbar({ onMenuClick }: TopbarProps) {
     return () => document.removeEventListener("mousedown", handleClickOutside)
   }, [menuOpen])
 
-  const handleSignOut = () => {
-    localStorage.clear()
+  const handleSignOut = async () => {
+    // Call server-side logout to clear the HttpOnly cookie.
+    // Client JS cannot clear HttpOnly cookies directly — this server route does it.
+    try {
+      await fetch("/api/auth/logout", { method: "POST" })
+    } catch {
+      // best-effort
+    }
     window.location.href = "/login"
   }
 
-  // First letter of org name for avatar
-  const initial = orgName ? orgName[0].toUpperCase() : "U"
+  const plan = session.plan
+    ? session.plan.charAt(0).toUpperCase() + session.plan.slice(1)
+    : "Free"
+
+  const initial = session.orgName ? session.orgName[0].toUpperCase() : "U"
 
   return (
     <header className="h-14 border-b border-[#1e1e2e] flex items-center px-3 lg:px-5 gap-3 bg-[#0a0a0f]/80 backdrop-blur-sm sticky top-0 z-40 flex-shrink-0">
@@ -78,9 +78,9 @@ export default function Topbar({ onMenuClick }: TopbarProps) {
 
       <div className="flex items-center gap-2 lg:gap-3 flex-shrink-0">
         <span className="text-xs font-mono text-[#4a4a6a] hidden sm:block tabular-nums">{time}</span>
-        {orgName && (
+        {session.orgName && (
           <span className="text-xs text-[#4a4a6a] font-mono hidden md:block max-w-[120px] truncate">
-            {orgName}
+            {session.orgName}
           </span>
         )}
 
@@ -99,7 +99,7 @@ export default function Topbar({ onMenuClick }: TopbarProps) {
             <div className="absolute right-0 top-10 bg-[#111118] border border-[#1e1e2e] rounded-xl shadow-2xl shadow-black/60 w-52 z-50 overflow-hidden animate-slide-up">
               {/* Org info */}
               <div className="px-4 py-3 border-b border-[#1e1e2e]">
-                <p className="text-xs text-[#e8e8f0] font-medium truncate">{orgName || "Organization"}</p>
+                <p className="text-xs text-[#e8e8f0] font-medium truncate">{session.orgName || "Organization"}</p>
                 <div className="flex items-center gap-1.5 mt-1">
                   <span className="text-[10px] font-mono text-[#4a4a6a]">{plan} Plan</span>
                   {plan.toLowerCase() !== "pro" && (

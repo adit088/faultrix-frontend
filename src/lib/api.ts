@@ -7,24 +7,29 @@ import type {
   FailureInsight, ProxyRequest, ProxyResponse,
 } from "@/types"
 
-// Proxied backend calls — key forwarded via X-Faultrix-Key header from localStorage
+// All API calls go through our Next.js proxy route.
+// The proxy route reads the API key from the HttpOnly fx_session cookie server-side
+// and injects it into the X-API-Key header before forwarding to the backend.
+// Client-side JS never sees or handles the API key at all.
 const http = axios.create({ baseURL: "/api/proxy" })
 
-// Inject stored API key into every proxied request
-http.interceptors.request.use(config => {
-  if (typeof window !== "undefined") {
-    const key = localStorage.getItem("fx_api_key")
-    if (key) config.headers["X-Faultrix-Key"] = key
-  }
-  return config
-})
+// NOTE: No request interceptor injecting an API key header.
+// The browser automatically sends the HttpOnly cookie with every same-origin request.
+// The Next.js proxy route (/api/proxy/[...path]) reads the cookie server-side and
+// injects the key into the upstream request. Zero client-side key handling.
 
-// Auto-logout on 401 — invalid/expired key redirects to login
+// Auto-logout on 401 — session expired or key revoked
 http.interceptors.response.use(
   res => res,
-  err => {
+  async err => {
     if (err.response?.status === 401 && typeof window !== "undefined") {
-      localStorage.clear()
+      // Call the server-side logout route to clear the HttpOnly cookie
+      // (client JS cannot clear HttpOnly cookies directly)
+      try {
+        await fetch("/api/auth/logout", { method: "POST" })
+      } catch {
+        // best-effort
+      }
       window.location.href = "/login"
     }
     return Promise.reject(err)
@@ -42,6 +47,16 @@ export const authApi = {
     axios.post<{ orgId: number; orgName: string; slug: string; plan: string; maxRules: number; valid: boolean }>(
       "/api/auth/login", { apiKey }
     ).then(r => r.data),
+
+  // Checks session validity without exposing the key. Used by Shell for auth guards.
+  session: () =>
+    fetch("/api/auth/session").then(r => {
+      if (!r.ok) throw new Error("No session")
+      return r.json() as Promise<{ authenticated: boolean; orgName: string; slug: string; plan: string; maxRules: number }>
+    }),
+
+  logout: () =>
+    fetch("/api/auth/logout", { method: "POST" }),
 }
 
 // ─── Rules ────────────────────────────────────────────────────────────────────

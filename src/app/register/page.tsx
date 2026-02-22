@@ -30,6 +30,10 @@ function Logo() {
 }
 
 // ── API Key Reveal ─────────────────────────────────────────────────────────────
+// This component shows the raw API key ONCE so the user can copy it to their
+// password manager / .env file. The key is passed as a prop from state — it's
+// never stored in localStorage. The HttpOnly cookie is already set by the
+// server-side auth route before this component even mounts.
 function ApiKeyReveal({ apiKey, onContinue }: { apiKey: string; onContinue: () => void }) {
   const [copied, setCopied] = useState(false)
   const [confirmed, setConfirmed] = useState(false)
@@ -121,13 +125,12 @@ function ApiKeyReveal({ apiKey, onContinue }: { apiKey: string; onContinue: () =
 export default function RegisterPage() {
   const router = useRouter()
 
-  const [step, setStep]           = useState<"form" | "key">("form")
-  const [orgName, setOrgName]     = useState("")
-  const [email, setEmail]         = useState("")
-  const [loading, setLoading]     = useState(false)
-  const [error, setError]         = useState<string | null>(null)
-  const [apiKey, setApiKey]       = useState("")
-  const [orgSlug, setOrgSlug]     = useState("")
+  const [step, setStep]         = useState<"form" | "key">("form")
+  const [orgName, setOrgName]   = useState("")
+  const [email, setEmail]       = useState("")
+  const [loading, setLoading]   = useState(false)
+  const [error, setError]       = useState<string | null>(null)
+  const [apiKey, setApiKey]     = useState("")  // only held in React state, never localStorage
 
   const handleRegister = async () => {
     if (!orgName.trim() || !email.trim()) return
@@ -135,14 +138,16 @@ export default function RegisterPage() {
     setError(null)
 
     try {
+      // authApi.register() calls our Next.js /api/auth/register route.
+      // That route calls the backend, gets the raw API key, sets an HttpOnly
+      // fx_session cookie, and returns the apiKey in the response body once
+      // (so we can display it to the user for copying).
+      // After this component unmounts, the key is gone from JS memory.
       const res = await authApi.register(orgName.trim(), email.trim())
-      // Store key in localStorage so the proxy route can pick it up
-      localStorage.setItem("fx_api_key", res.apiKey)
-      localStorage.setItem("fx_org_name", res.orgName)
-      localStorage.setItem("fx_org_slug", res.slug)
-      localStorage.setItem("fx_plan", res.plan)
+
+      // Store the key in React state ONLY — for displaying on the next screen.
+      // It's NOT going into localStorage. The HttpOnly cookie is already set.
       setApiKey(res.apiKey)
-      setOrgSlug(res.slug)
       setStep("key")
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : "Registration failed"
@@ -153,6 +158,8 @@ export default function RegisterPage() {
   }
 
   const handleContinue = () => {
+    // Clear the key from state now that the user has confirmed they copied it
+    setApiKey("")
     router.replace("/dashboard")
   }
 

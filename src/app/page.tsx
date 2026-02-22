@@ -10,17 +10,29 @@ export default function Home() {
   useEffect(() => {
     const seen = sessionStorage.getItem("fx_splash_seen")
     if (seen) {
-      // Already seen splash — go straight to right page
-      const key = localStorage.getItem("fx_api_key")
-      router.replace(key ? "/dashboard" : "/register")
+      // Already seen splash — check session status server-side and redirect accordingly.
+      // We check /api/auth/session (which reads the HttpOnly cookie) instead of
+      // localStorage to determine if the user is logged in.
+      fetch("/api/auth/session")
+        .then(res => {
+          router.replace(res.ok ? "/dashboard" : "/register")
+        })
+        .catch(() => {
+          router.replace("/register")
+        })
     }
   }, [router])
 
-  const handleSplashDone = () => {
+  const handleSplashDone = async () => {
     sessionStorage.setItem("fx_splash_seen", "1")
     setShowSplash(false)
-    const key = localStorage.getItem("fx_api_key")
-    router.replace(key ? "/dashboard" : "/register")
+
+    try {
+      const res = await fetch("/api/auth/session")
+      router.replace(res.ok ? "/dashboard" : "/register")
+    } catch {
+      router.replace("/register")
+    }
   }
 
   if (!showSplash) return null

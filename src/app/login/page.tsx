@@ -41,12 +41,20 @@ export default function LoginPage() {
     setError(null)
 
     try {
-      const res = await authApi.login(apiKey.trim())
-      // Store session info
-      localStorage.setItem("fx_api_key",  apiKey.trim())
-      localStorage.setItem("fx_org_name", res.orgName)
-      localStorage.setItem("fx_org_slug", res.slug)
-      localStorage.setItem("fx_plan",     res.plan)
+      // authApi.login() calls our Next.js /api/auth/login route.
+      // That route validates the key with the backend and, on success,
+      // sets an HttpOnly fx_session cookie — the key never touches localStorage.
+      // The response contains only safe metadata (orgName, slug, plan).
+      await authApi.login(apiKey.trim())
+
+      // IMPORTANT: We intentionally do NOT store the API key anywhere in JS.
+      // The server set an HttpOnly cookie — that's our session token now.
+      // Non-sensitive display info (orgName, plan) is fetched fresh from
+      // /api/auth/session on every Shell mount, so we don't need to cache it.
+
+      // Clear the input — the key has served its purpose
+      setApiKey("")
+
       router.replace("/dashboard")
     } catch {
       setError("Invalid API key. Check your key and try again.")
@@ -94,6 +102,7 @@ export default function LoginPage() {
                 onKeyDown={e => e.key === "Enter" && handleLogin()}
                 placeholder="ck_test_..."
                 autoFocus
+                autoComplete="off"
                 className="w-full bg-[#0a0a0f] border border-[#1e1e2e] rounded-xl px-4 py-3 pr-12 text-sm text-[#e8e8f0] placeholder:text-[#2a2a3a] focus:outline-none focus:border-[#6c47ff] transition-colors font-mono"
               />
               <button
