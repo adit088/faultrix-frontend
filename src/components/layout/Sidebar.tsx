@@ -131,23 +131,21 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
       </div>
 
       {/* Creator credit */}
-      <div className="px-4 pb-4 flex-shrink-0">
+      <div className="px-3 pb-4 flex-shrink-0">
         <a
           href="https://x.com/Adit874319"
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-center gap-1.5 group w-full"
+          className="flex items-center gap-2 px-3 py-2.5 rounded-xl border border-[#6c47ff20] bg-gradient-to-r from-[#6c47ff0a] to-[#00e5a006] hover:border-[#6c47ff50] hover:from-[#6c47ff15] hover:to-[#00e5a010] transition-all duration-200 group w-full"
         >
-          <span className="text-[9px] font-mono text-[#2a2a3a] uppercase tracking-widest group-hover:text-[#4a4a6a] transition-colors">
-            built by
-          </span>
-          <span className="text-[9px] font-mono text-[#3a3a5a] group-hover:text-[#6c47ff] transition-colors font-medium">
-            @Adit874319
-          </span>
-          {/* X / Twitter icon */}
-          <svg className="w-2.5 h-2.5 text-[#2a2a3a] group-hover:text-[#6c47ff] transition-colors ml-auto flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
+          <svg className="w-3 h-3 text-[#6c47ff] flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
             <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.259 5.63L18.244 2.25zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
           </svg>
+          <div className="flex flex-col min-w-0">
+            <span className="text-[9px] font-mono text-[#3a3a5a] uppercase tracking-widest group-hover:text-[#5a5a7a] transition-colors leading-none mb-0.5">built by</span>
+            <span className="text-[11px] font-mono font-bold text-[#7c6aff] group-hover:text-[#a78bfa] transition-colors leading-none truncate">@Adit874319</span>
+          </div>
+          <div className="ml-auto w-1.5 h-1.5 rounded-full bg-[#00e5a0] opacity-70 group-hover:opacity-100 animate-pulse flex-shrink-0" />
         </a>
       </div>
     </aside>

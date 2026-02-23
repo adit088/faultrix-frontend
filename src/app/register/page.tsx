@@ -280,21 +280,22 @@ export default function RegisterPage() {
         </div>
 
         {/* Footer */}
-        <div className="mt-6 flex flex-col items-center gap-1.5">
-          <p className="text-[10px] text-[#2a2a3a] font-mono">
+        <div className="mt-6 flex flex-col items-center gap-3">
+          <p className="text-[10px] text-[#2a2a4a] font-mono tracking-widest uppercase">
             FAULTRIX — CHAOS ENGINEERING PLATFORM
           </p>
           <a
             href="https://x.com/Adit874319"
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-1 group"
+            className="flex items-center gap-2 px-4 py-2 rounded-xl border border-[#6c47ff25] bg-gradient-to-r from-[#6c47ff08] to-[#00e5a006] hover:border-[#6c47ff50] hover:from-[#6c47ff14] hover:to-[#00e5a010] transition-all duration-200 group"
           >
-            <span className="text-[9px] font-mono text-[#1e1e2e] group-hover:text-[#3a3a5a] transition-colors uppercase tracking-widest">built by</span>
-            <span className="text-[9px] font-mono text-[#2a2a3a] group-hover:text-[#6c47ff] transition-colors">@Adit874319</span>
-            <svg className="w-2 h-2 text-[#1e1e2e] group-hover:text-[#6c47ff] transition-colors" viewBox="0 0 24 24" fill="currentColor">
+            <svg className="w-3 h-3 text-[#6c47ff] flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
               <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.259 5.63L18.244 2.25zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
             </svg>
+            <span className="text-[10px] font-mono text-[#3a3a5a] uppercase tracking-widest group-hover:text-[#5a5a7a] transition-colors">built by</span>
+            <span className="text-[12px] font-mono font-bold text-[#7c6aff] group-hover:text-[#a78bfa] transition-colors">@Adit874319</span>
+            <div className="w-1.5 h-1.5 rounded-full bg-[#00e5a0] animate-pulse opacity-70 group-hover:opacity-100 transition-opacity" />
           </a>
         </div>
 
