@@ -120,7 +120,7 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
       </div>
 
       {/* Status */}
-      <div className="px-4 pb-4 flex-shrink-0">
+      <div className="px-4 pb-3 flex-shrink-0">
         <div className="bg-[#111118] rounded-lg p-3 border border-[#1e1e2e]">
           <p className="text-[10px] font-mono text-[#4a4a6a] uppercase tracking-wider">API Status</p>
           <div className="flex items-center gap-2 mt-1.5">
@@ -128,6 +128,27 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
             <span className="text-xs text-[#8888aa]">Connected</span>
           </div>
         </div>
+      </div>
+
+      {/* Creator credit */}
+      <div className="px-4 pb-4 flex-shrink-0">
+        <a
+          href="https://x.com/Adit874319"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-1.5 group w-full"
+        >
+          <span className="text-[9px] font-mono text-[#2a2a3a] uppercase tracking-widest group-hover:text-[#4a4a6a] transition-colors">
+            built by
+          </span>
+          <span className="text-[9px] font-mono text-[#3a3a5a] group-hover:text-[#6c47ff] transition-colors font-medium">
+            @Adit874319
+          </span>
+          {/* X / Twitter icon */}
+          <svg className="w-2.5 h-2.5 text-[#2a2a3a] group-hover:text-[#6c47ff] transition-colors ml-auto flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.259 5.63L18.244 2.25zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+          </svg>
+        </a>
       </div>
     </aside>
   )
