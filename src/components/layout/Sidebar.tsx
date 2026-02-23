@@ -119,19 +119,8 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
         </Link>
       </div>
 
-      {/* Status */}
-      <div className="px-4 pb-3 flex-shrink-0">
-        <div className="bg-[#111118] rounded-lg p-3 border border-[#1e1e2e]">
-          <p className="text-[10px] font-mono text-[#4a4a6a] uppercase tracking-wider">API Status</p>
-          <div className="flex items-center gap-2 mt-1.5">
-            <div className="w-2 h-2 rounded-full bg-[#00e5a0] animate-pulse flex-shrink-0" />
-            <span className="text-xs text-[#8888aa]">Connected</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Creator credit */}
-      <div className="px-3 pb-4 flex-shrink-0">
+      {/* Creator credit — above status so always visible on mobile */}
+      <div className="px-3 pb-2 flex-shrink-0">
         <a
           href="https://x.com/Adit874319"
           target="_blank"
@@ -147,6 +136,17 @@ export default function Sidebar({ open, onClose }: SidebarProps) {
           </div>
           <div className="ml-auto w-1.5 h-1.5 rounded-full bg-[#00e5a0] opacity-70 group-hover:opacity-100 animate-pulse flex-shrink-0" />
         </a>
+      </div>
+
+      {/* Status */}
+      <div className="px-4 pb-4 flex-shrink-0">
+        <div className="bg-[#111118] rounded-lg p-3 border border-[#1e1e2e]">
+          <p className="text-[10px] font-mono text-[#4a4a6a] uppercase tracking-wider">API Status</p>
+          <div className="flex items-center gap-2 mt-1.5">
+            <div className="w-2 h-2 rounded-full bg-[#00e5a0] animate-pulse flex-shrink-0" />
+            <span className="text-xs text-[#8888aa]">Connected</span>
+          </div>
+        </div>
       </div>
     </aside>
   )
